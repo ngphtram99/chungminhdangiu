@@ -28,8 +28,12 @@ const vt323 = VT323({
 });
 
 export const metadata: Metadata = {
-  title: "Nhật Ký Đôi Ta",
-  description: "Lưu lại những nơi hai đứa đã đi qua",
+  title: "Together",
+  description: "just for us",
+  openGraph: {
+    title: "Together",
+    description: "just for us",
+  },
 };
 
 export const viewport: Viewport = {
