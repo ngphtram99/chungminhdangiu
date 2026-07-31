@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { Place, PlaceStatus, STATUS_LABEL } from "@/lib/types";
 import { supabase } from "@/lib/supabase";
-import { X, Trash2, Upload } from "lucide-react";
+import { HCMC_DISTRICTS } from "@/lib/geo";
+import { X, Trash2, Upload, Navigation } from "lucide-react";
 
 export type PlaceFormValues = {
   name: string;
@@ -15,6 +16,9 @@ export type PlaceFormValues = {
   notes: string;
   photo_links: string[];
   added_by: string;
+  district: string;
+  lat: number | null;
+  lng: number | null;
 };
 
 const EMPTY: PlaceFormValues = {
@@ -27,21 +31,28 @@ const EMPTY: PlaceFormValues = {
   notes: "",
   photo_links: [],
   added_by: "",
+  district: "",
+  lat: null,
+  lng: null,
 };
 
 export default function AddEditPlaceModal({
   initial,
   onClose,
   onSave,
+  lockedStatus,
 }: {
   initial: Place | null;
   onClose: () => void;
   onSave: (values: PlaceFormValues) => Promise<void>;
+  lockedStatus?: PlaceStatus;
 }) {
   const [values, setValues] = useState<PlaceFormValues>(EMPTY);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [gettingLocation, setGettingLocation] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
 
   useEffect(() => {
     if (initial) {
@@ -49,17 +60,46 @@ export default function AddEditPlaceModal({
         name: initial.name,
         address: initial.address,
         maps_link: initial.maps_link || "",
-        status: initial.status,
+        status: lockedStatus || initial.status,
         visited_date: initial.visited_date || "",
         rating: initial.rating || 0,
         notes: initial.notes || "",
         photo_links: initial.photo_links || [],
         added_by: initial.added_by || "",
+        district: initial.district || "",
+        lat: initial.lat ?? null,
+        lng: initial.lng ?? null,
       });
     } else {
-      setValues(EMPTY);
+      setValues({ ...EMPTY, status: lockedStatus || EMPTY.status });
     }
-  }, [initial]);
+  }, [initial, lockedStatus]);
+
+  function handleGetLocation() {
+    if (!navigator.geolocation) {
+      setLocationError("Trình duyệt không hỗ trợ định vị.");
+      return;
+    }
+    setGettingLocation(true);
+    setLocationError(null);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setValues((v) => ({
+          ...v,
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+        }));
+        setGettingLocation(false);
+      },
+      () => {
+        setLocationError(
+          "Không lấy được vị trí. Kiểm tra đã cho phép quyền định vị chưa."
+        );
+        setGettingLocation(false);
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  }
 
   async function handleUploadPhotos(files: FileList) {
     setUploading(true);
@@ -148,6 +188,21 @@ export default function AddEditPlaceModal({
             />
           </Field>
 
+          <Field label="Quận">
+            <select
+              value={values.district}
+              onChange={(e) => setValues((v) => ({ ...v, district: e.target.value }))}
+              className="input"
+            >
+              <option value="">-- Chọn quận --</option>
+              {HCMC_DISTRICTS.map((d) => (
+                <option key={d} value={d}>
+                  {d}
+                </option>
+              ))}
+            </select>
+          </Field>
+
           <Field label="Link Google Maps (không bắt buộc)">
             <input
               value={values.maps_link}
@@ -157,24 +212,45 @@ export default function AddEditPlaceModal({
             />
           </Field>
 
-          <Field label="Trạng thái">
-            <div className="flex gap-2">
-              {(Object.keys(STATUS_LABEL) as PlaceStatus[]).map((s) => (
-                <button
-                  type="button"
-                  key={s}
-                  onClick={() => setValues((v) => ({ ...v, status: s }))}
-                  className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors ${
-                    values.status === s
-                      ? "bg-ink text-paper border-ink"
-                      : "bg-transparent border-charcoal/20 text-charcoal/70 hover:border-ink"
-                  }`}
-                >
-                  {STATUS_LABEL[s]}
-                </button>
-              ))}
-            </div>
+          <Field label="Vị trí (không bắt buộc)">
+            <button
+              type="button"
+              onClick={handleGetLocation}
+              disabled={gettingLocation}
+              className="flex items-center justify-center gap-2 border border-dashed border-charcoal/25 rounded-lg py-2.5 text-sm text-charcoal/60 hover:border-ink hover:text-ink transition-colors disabled:opacity-60"
+            >
+              <Navigation size={15} />
+              {gettingLocation
+                ? "Đang lấy vị trí..."
+                : values.lat != null
+                ? "Đã lưu vị trí hiện tại ✓"
+                : "Lấy vị trí hiện tại (khi đang đứng ở quán)"}
+            </button>
+            {locationError && (
+              <p className="text-xs text-coral-dark mt-1">{locationError}</p>
+            )}
           </Field>
+
+          {!lockedStatus && (
+            <Field label="Trạng thái">
+              <div className="flex gap-2">
+                {(Object.keys(STATUS_LABEL) as PlaceStatus[]).map((s) => (
+                  <button
+                    type="button"
+                    key={s}
+                    onClick={() => setValues((v) => ({ ...v, status: s }))}
+                    className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                      values.status === s
+                        ? "bg-ink text-paper border-ink"
+                        : "bg-transparent border-charcoal/20 text-charcoal/70 hover:border-ink"
+                    }`}
+                  >
+                    {STATUS_LABEL[s]}
+                  </button>
+                ))}
+              </div>
+            </Field>
+          )}
 
           {values.status === "visited" && (
             <div className="grid grid-cols-2 gap-4">

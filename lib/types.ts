@@ -12,6 +12,9 @@ export interface Place {
   photo_links: string[];
   added_by: string | null;
   created_at: string;
+  district: string | null;
+  lat: number | null;
+  lng: number | null;
 }
 
 export const STATUS_LABEL: Record<PlaceStatus, string> = {
