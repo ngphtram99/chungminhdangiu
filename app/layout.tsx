@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Inter, Space_Mono } from "next/font/google";
 import "./globals.css";
+import CategoryNav from "@/components/CategoryNav";
 
 const fraunces = Fraunces({
   subsets: ["latin", "vietnamese"],
@@ -43,7 +44,8 @@ export default function RootLayout({
       <body
         className={`${fraunces.variable} ${inter.variable} ${spaceMono.variable} font-body min-h-screen`}
       >
-        {children}
+        <div className="content-safe-bottom">{children}</div>
+        <CategoryNav />
       </body>
     </html>
   );

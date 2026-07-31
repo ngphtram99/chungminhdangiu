@@ -101,7 +101,7 @@ export default function PlacesPage() {
   }, [places]);
 
   return (
-    <main className="max-w-6xl mx-auto px-5 sm:px-8 pb-28 pt-10 sm:pt-14">
+    <main className="max-w-6xl mx-auto px-5 sm:px-8 pt-10 sm:pt-14">
       <header className="mb-10">
         <Link
           href="/"

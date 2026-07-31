@@ -56,12 +56,12 @@ select:focus-visible {
 }
 
 .content-safe-bottom {
-  padding-bottom: calc(4.75rem + env(safe-area-inset-bottom));
+  padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
 }
 
 @media (min-width: 640px) {
   .content-safe-bottom {
-    padding-bottom: 0;
+    padding-bottom: 6.5rem;
   }
 }
 

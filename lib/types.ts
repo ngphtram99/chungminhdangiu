@@ -35,3 +35,21 @@ export interface CoupleProfile {
   anniversary_date: string | null;
   updated_at: string;
 }
+
+export type CouplePhoto = {
+  id: string;
+  image_url: string;
+  storage_path: string;
+  caption: string | null;
+  uploaded_by: string | null;
+  created_at: string;
+};
+
+export type CalendarNote = {
+  id: string;
+  note_date: string;
+  content: string;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
