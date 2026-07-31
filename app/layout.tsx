@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Fraunces, Inter, Space_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -23,6 +23,14 @@ const spaceMono = Space_Mono({
 export const metadata: Metadata = {
   title: "Nhật Ký Đôi Ta",
   description: "Lưu lại những nơi hai đứa đã đi qua",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: "cover",
+  themeColor: "#F0DEEA",
 };
 
 export default function RootLayout({

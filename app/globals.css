@@ -49,3 +49,25 @@ select:focus-visible {
     scroll-behavior: auto !important;
   }
 }
+
+/* Chừa vùng an toàn iPhone (notch, Dynamic Island, thanh home) */
+.nav-safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.content-safe-bottom {
+  padding-bottom: calc(4.75rem + env(safe-area-inset-bottom));
+}
+
+@media (min-width: 640px) {
+  .content-safe-bottom {
+    padding-bottom: 0;
+  }
+}
+
+/* Chặn tràn ngang trên mobile */
+html,
+body {
+  overflow-x: hidden;
+  width: 100%;
+}
