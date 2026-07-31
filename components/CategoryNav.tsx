@@ -22,7 +22,7 @@ export default function CategoryNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 paper-card border-t border-charcoal/10 nav-safe-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 paper-card border-t-[3px] border-ink nav-safe-bottom">
       <div className="max-w-3xl mx-auto grid grid-cols-5 gap-1.5 sm:gap-3 px-2 sm:px-4 py-2 sm:py-3">
         {CATEGORIES.map((cat) => {
           const Icon = cat.icon;
@@ -30,9 +30,9 @@ export default function CategoryNav() {
 
           const content = (
             <div
-              className={`flex flex-col items-center justify-center gap-1 sm:gap-2 rounded-xl sm:rounded-2xl py-2 sm:py-3 px-1 border transition-colors h-full ${
+              className={`flex flex-col items-center justify-center gap-1 sm:gap-2 rounded-lg py-2 sm:py-3 px-1 border-2 transition-colors h-full ${
                 isCurrent
-                  ? "bg-ink border-ink text-paper"
+                  ? "bg-ink border-ink text-paper shadow-[3px_3px_0_0_#1A1A1A]"
                   : cat.ready
                   ? "border-transparent hover:bg-charcoal/5 cursor-pointer text-charcoal"
                   : "border-transparent opacity-40 cursor-not-allowed text-charcoal"

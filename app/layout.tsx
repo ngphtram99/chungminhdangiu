@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Inter, Space_Mono } from "next/font/google";
+import { Fraunces, Inter, Space_Mono, VT323 } from "next/font/google";
 import "./globals.css";
 import CategoryNav from "@/components/CategoryNav";
 
@@ -19,6 +19,12 @@ const spaceMono = Space_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
   weight: ["400", "700"],
+});
+
+const vt323 = VT323({
+  subsets: ["latin"],
+  variable: "--font-pixel",
+  weight: ["400"],
 });
 
 export const metadata: Metadata = {
@@ -42,8 +48,12 @@ export default function RootLayout({
   return (
     <html lang="vi">
       <body
-        className={`${fraunces.variable} ${inter.variable} ${spaceMono.variable} font-body min-h-screen`}
+        className={`${fraunces.variable} ${inter.variable} ${spaceMono.variable} ${vt323.variable} font-body min-h-screen`}
       >
+        <div
+          className="fixed inset-0 -z-10 bg-[url('/couple-mascot.jpg')] bg-center bg-no-repeat bg-contain opacity-[0.18] pointer-events-none"
+          aria-hidden="true"
+        />
         <div className="content-safe-bottom">{children}</div>
         <CategoryNav />
       </body>

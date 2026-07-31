@@ -161,7 +161,7 @@ export default function PhotoGallery() {
         <button
           onClick={handleUploadClick}
           disabled={uploading}
-          className="inline-flex items-center gap-1.5 bg-coral hover:bg-coral-dark text-paper text-[11px] sm:text-sm font-semibold px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-full transition-colors shrink-0 disabled:opacity-60"
+          className="inline-flex items-center gap-1.5 bg-coral hover:bg-coral-dark text-paper text-[11px] sm:text-sm font-semibold px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-lg border-2 border-ink shadow-[3px_3px_0_0_#1A1A1A] transition-colors shrink-0 disabled:opacity-60"
         >
           {uploading ? (
             <Loader2 size={15} className="animate-spin" />
@@ -188,7 +188,7 @@ export default function PhotoGallery() {
             return (
               <div
                 key={card.name}
-                className="paper-card rounded-2xl overflow-hidden flex flex-col"
+                className="paper-card rounded-lg border-[3px] border-ink shadow-[4px_4px_0_0_#1A1A1A] overflow-hidden flex flex-col"
               >
                 <div className="px-2.5 sm:px-3 pt-2 sm:pt-3 pb-1.5 sm:pb-2 flex items-center justify-between">
                   <span className="text-[11px] sm:text-sm font-semibold text-ink truncate">
