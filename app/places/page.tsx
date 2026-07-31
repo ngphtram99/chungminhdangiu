@@ -1,21 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { Place, PlaceStatus } from "@/lib/types";
-import StatusTabs from "@/components/StatusTabs";
-import PlaceCard from "@/components/PlaceCard";
+import { Place } from "@/lib/types";
+import PlaceListItem from "@/components/PlaceListItem";
 import AddEditPlaceModal, { PlaceFormValues } from "@/components/AddEditPlaceModal";
-import { Plus, ArrowLeft } from "lucide-react";
-
-type TabValue = PlaceStatus | "all";
+import { Plus } from "lucide-react";
 
 export default function PlacesPage() {
   const [places, setPlaces] = useState<Place[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<TabValue>("all");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingPlace, setEditingPlace] = useState<Place | null>(null);
 
@@ -53,6 +48,9 @@ export default function PlacesPage() {
       notes: values.notes.trim() || null,
       photo_links: values.photo_links,
       added_by: values.added_by.trim() || null,
+      district: values.district || null,
+      lat: values.lat,
+      lng: values.lng,
     };
 
     if (editingPlace) {
@@ -86,48 +84,13 @@ export default function PlacesPage() {
     fetchPlaces();
   }
 
-  const filtered = useMemo(() => {
-    if (activeTab === "all") return places;
-    return places.filter((p) => p.status === activeTab);
-  }, [places, activeTab]);
-
-  const counts = useMemo(() => {
-    return {
-      all: places.length,
-      visited: places.filter((p) => p.status === "visited").length,
-      want_to_go: places.filter((p) => p.status === "want_to_go").length,
-      not_yet: places.filter((p) => p.status === "not_yet").length,
-    };
-  }, [places]);
-
   return (
-    <main className="max-w-6xl mx-auto px-5 sm:px-8 pt-10 sm:pt-14">
-      <header className="mb-10">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-1.5 text-charcoal/60 hover:text-ink text-sm font-mono mb-4 transition-colors"
-        >
-          <ArrowLeft size={14} />
-          Về trang chủ
-        </Link>
-        <h1 className="font-display italic text-3xl sm:text-4xl font-semibold text-ink leading-tight">
+    <main className="max-w-3xl mx-auto px-4 sm:px-8 pt-6 sm:pt-14">
+      <header className="mb-5 sm:mb-8">
+        <h1 className="font-display italic text-2xl sm:text-4xl font-semibold text-ink leading-tight">
           Địa điểm của tụi mình
         </h1>
       </header>
-
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <StatusTabs active={activeTab} onChange={setActiveTab} counts={counts} />
-        <button
-          onClick={() => {
-            setEditingPlace(null);
-            setModalOpen(true);
-          }}
-          className="inline-flex items-center justify-center gap-2 bg-coral hover:bg-coral-dark text-paper font-semibold px-5 py-2.5 rounded-full transition-colors shrink-0"
-        >
-          <Plus size={17} />
-          Thêm địa điểm
-        </button>
-      </div>
 
       {error && (
         <div className="paper-card text-charcoal rounded-xl p-5 mb-6 border border-coral/40">
@@ -137,17 +100,17 @@ export default function PlacesPage() {
 
       {loading ? (
         <p className="text-charcoal/60 font-mono text-sm">Đang tải...</p>
-      ) : filtered.length === 0 ? (
-        <div className="paper-card text-charcoal rounded-2xl p-10 text-center">
+      ) : places.length === 0 ? (
+        <div className="paper-card text-charcoal rounded-2xl p-8 sm:p-10 text-center">
           <p className="font-display text-lg italic mb-1">Chưa có gì ở đây cả</p>
           <p className="text-charcoal/60 text-sm">
-            Bấm &ldquo;Thêm địa điểm&rdquo; để bắt đầu ghi lại kỷ niệm nhé.
+            Bấm nút + góc dưới để bắt đầu ghi lại kỷ niệm nhé.
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filtered.map((place) => (
-            <PlaceCard
+        <div className="flex flex-col gap-2.5 sm:gap-3">
+          {places.map((place) => (
+            <PlaceListItem
               key={place.id}
               place={place}
               onEdit={() => {
@@ -159,6 +122,17 @@ export default function PlacesPage() {
           ))}
         </div>
       )}
+
+      <button
+        onClick={() => {
+          setEditingPlace(null);
+          setModalOpen(true);
+        }}
+        aria-label="Thêm địa điểm"
+        className="fixed right-4 sm:right-8 bottom-[calc(5.5rem+0.75rem)] sm:bottom-24 z-40 w-14 h-14 rounded-full bg-coral hover:bg-coral-dark text-paper shadow-xl shadow-ink-dark/30 flex items-center justify-center transition-colors"
+      >
+        <Plus size={24} />
+      </button>
 
       {modalOpen && (
         <AddEditPlaceModal
