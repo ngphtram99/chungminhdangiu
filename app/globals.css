@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #F0DEEA;
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(26,26,26,0.05) 1px, transparent 0),
+    linear-gradient(160deg, #F7E3ED 0%, #EFE1F2 45%, #E4D6EE 100%);
+  background-size: 20px 20px, cover;
+  background-attachment: fixed;
+  color: #1A1A1A;
+}
+
+::selection {
+  background-color: #1A1A1A;
+  color: #F7E3ED;
+}
+
+.paper-card {
+  background-color: #FFFBF9;
+  background-image: radial-gradient(circle at 1px 1px, rgba(26,26,26,0.04) 1px, transparent 0);
+  background-size: 16px 16px;
+}
+
+.stamp {
+  transform: rotate(-4deg);
+}
+
+/* visible keyboard focus */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid #E8A33D;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
