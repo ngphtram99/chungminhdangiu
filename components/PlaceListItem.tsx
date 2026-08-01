@@ -81,7 +81,7 @@ export default function PlaceListItem({
           </div>
         </button>
 
-        
+        <a
           href={directionsUrl}
           target="_blank"
           rel="noopener noreferrer"
