@@ -24,6 +24,8 @@ export default function RandomPage() {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [visitedTarget, setVisitedTarget] = useState<Place | null>(null);
   const [customDate, setCustomDate] = useState("");
+  const [visitedRating, setVisitedRating] = useState(0);
+  const [visitedNotes, setVisitedNotes] = useState("");
   const [visitedPlaces, setVisitedPlaces] = useState<Place[]>([]);
   const [spinMode, setSpinMode] = useState<"want_to_go" | "visited">("want_to_go");
   const [showSpinChoice, setShowSpinChoice] = useState(false);
@@ -131,13 +133,20 @@ export default function RandomPage() {
   function openMarkVisited(place: Place) {
     setVisitedTarget(place);
     setCustomDate(new Date().toISOString().slice(0, 10));
+    setVisitedRating(place.rating || 0);
+    setVisitedNotes(place.notes || "");
   }
 
   async function confirmMarkVisited(dateStr: string) {
     if (!visitedTarget) return;
     const { error } = await supabase
       .from("places")
-      .update({ status: "visited", visited_date: dateStr })
+      .update({
+        status: "visited",
+        visited_date: dateStr,
+        rating: visitedRating || null,
+        notes: visitedNotes.trim() || null,
+      })
       .eq("id", visitedTarget.id);
     if (error) {
       alert("Lỗi khi cập nhật: " + error.message);
@@ -381,7 +390,7 @@ export default function RandomPage() {
 
       {visitedTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-5 bg-ink/40">
-          <div className="paper-card rounded-xl border-[3px] border-ink shadow-[5px_5px_0_0_#1A1A1A] p-5 sm:p-6 w-full max-w-sm text-left">
+          <div className="paper-card rounded-xl border-[3px] border-ink shadow-[5px_5px_0_0_#1A1A1A] p-5 sm:p-6 w-full max-w-sm text-left max-h-[85vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-1">
               <p className="font-display italic text-lg text-ink">
                 Đánh dấu đã đi
@@ -397,6 +406,33 @@ export default function RandomPage() {
             <p className="text-sm text-charcoal/70 mb-4">
               {visitedTarget.name}
             </p>
+
+            <label className="flex flex-col gap-1.5 text-sm font-medium text-charcoal/90 mb-3">
+              <span>Đánh giá</span>
+              <select
+                value={visitedRating}
+                onChange={(e) => setVisitedRating(Number(e.target.value))}
+                className="rounded-lg border-2 border-ink px-3 py-2 text-sm text-charcoal bg-paper focus:outline-none"
+              >
+                <option value={0}>Chưa chấm</option>
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <option key={n} value={n}>
+                    {"★".repeat(n)}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="flex flex-col gap-1.5 text-sm font-medium text-charcoal/90 mb-4">
+              <span>Ghi chú</span>
+              <textarea
+                value={visitedNotes}
+                onChange={(e) => setVisitedNotes(e.target.value)}
+                placeholder="Món ngon, kỷ niệm, lưu ý..."
+                rows={3}
+                className="rounded-lg border-2 border-ink px-3 py-2 text-sm text-charcoal bg-paper focus:outline-none resize-none w-full"
+              />
+            </label>
 
             <button
               onClick={() => confirmMarkVisited(new Date().toISOString().slice(0, 10))}
