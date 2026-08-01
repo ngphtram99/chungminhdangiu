@@ -186,7 +186,7 @@ export default function CalendarPage() {
         <div className="flex flex-col items-center gap-1.5">
           <h1 className="font-display italic text-2xl sm:text-4xl font-semibold text-ink text-center">
             {view === "year"
-              ? `Note lịch ${year}`
+              ? `${year}`
               : `${MONTH_NAMES[activeMonth]} ${year}`}
           </h1>
           <button

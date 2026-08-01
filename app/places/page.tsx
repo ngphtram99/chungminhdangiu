@@ -113,13 +113,7 @@ export default function PlacesPage() {
   }, [places, searchTerm]);
 
   return (
-    <main className="max-w-3xl mx-auto px-4 sm:px-8 pt-6 sm:pt-14">
-      <header className="mb-4 sm:mb-6">
-        <h1 className="font-display italic text-2xl sm:text-4xl font-semibold text-ink leading-tight">
-          Địa điểm của tụi mình
-        </h1>
-      </header>
-
+    <main className="max-w-3xl mx-auto px-4 sm:px-8 pt-4 sm:pt-8">
       <div className="relative mb-5 sm:mb-8">
         <Search
           size={16}

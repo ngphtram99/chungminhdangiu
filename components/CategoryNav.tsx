@@ -12,9 +12,9 @@ import {
 
 const CATEGORIES = [
   { label: "Inlove", href: "/", icon: Heart, ready: true },
-  { label: "Note lịch", href: "/calendar", icon: CalendarDays, ready: true },
-  { label: "DS quán đã đi", href: "/places", icon: MapPinned, ready: true },
-  { label: "Random quán", href: "/random", icon: Shuffle, ready: true },
+  { label: "Lịch", href: "/calendar", icon: CalendarDays, ready: true },
+  { label: "Địa điểm", href: "/places", icon: MapPinned, ready: true },
+  { label: "Random", href: "/random", icon: Shuffle, ready: true },
   { label: "Cài đặt", href: "/settings", icon: Settings, ready: false },
 ];
 

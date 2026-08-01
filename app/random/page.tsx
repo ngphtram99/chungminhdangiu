@@ -231,11 +231,7 @@ export default function RandomPage() {
   });
 
   return (
-    <main className="w-full max-w-3xl mx-auto px-4 sm:px-8 pt-5 sm:pt-16 pb-10 flex flex-col items-center text-center">
-      <h1 className="font-display italic text-2xl sm:text-4xl font-semibold text-ink mb-5 sm:mb-8">
-        Random quán
-      </h1>
-
+    <main className="w-full max-w-3xl mx-auto px-4 sm:px-8 pt-4 sm:pt-8 pb-10 flex flex-col items-center text-center">
       {loading ? (
         <p className="text-charcoal/60 font-mono text-sm">Đang tải...</p>
       ) : places.length === 0 && visitedPlaces.length === 0 ? (
