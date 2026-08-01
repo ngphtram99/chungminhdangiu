@@ -17,6 +17,21 @@ export default function PlacesPage() {
 
   useEffect(() => {
     fetchPlaces();
+
+    const channel = supabase
+      .channel("places_list_changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "places" },
+        () => {
+          fetchPlaces();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   async function fetchPlaces() {

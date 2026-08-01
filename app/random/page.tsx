@@ -42,8 +42,22 @@ export default function RandomPage() {
         { enableHighAccuracy: true, timeout: 8000 }
       );
     }
+
+    const channel = supabase
+      .channel("random_places_changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "places" },
+        () => {
+          fetchPlaces();
+          fetchVisitedPlaces();
+        }
+      )
+      .subscribe();
+
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
+      supabase.removeChannel(channel);
     };
   }, []);
 
