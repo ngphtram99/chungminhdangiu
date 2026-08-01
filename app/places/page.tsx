@@ -68,6 +68,7 @@ export default function PlacesPage() {
       district: values.district || null,
       lat: values.lat,
       lng: values.lng,
+      category: values.category || null,
     };
 
     if (editingPlace) {

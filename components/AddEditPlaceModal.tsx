@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Place, PlaceStatus, STATUS_LABEL } from "@/lib/types";
+import { Place, PlaceStatus, STATUS_LABEL, CATEGORY_PRESETS } from "@/lib/types";
 import { supabase } from "@/lib/supabase";
 import { HCMC_DISTRICTS } from "@/lib/geo";
 import { X, Trash2, Upload, Navigation } from "lucide-react";
@@ -19,6 +19,7 @@ export type PlaceFormValues = {
   district: string;
   lat: number | null;
   lng: number | null;
+  category: string;
 };
 
 const EMPTY: PlaceFormValues = {
@@ -34,6 +35,7 @@ const EMPTY: PlaceFormValues = {
   district: "",
   lat: null,
   lng: null,
+  category: "",
 };
 
 export default function AddEditPlaceModal({
@@ -247,7 +249,7 @@ export default function AddEditPlaceModal({
                 ? "Đang lấy vị trí..."
                 : values.lat != null
                 ? "Đã lưu vị trí hiện tại ✓"
-                : "Lấy vị trí hiện tại (khi đang đứng ở quán)"}
+                : "Lấy vị trí hiện tại (khi đang đứng ở địa điểm)"}
             </button>
             {locationError && (
               <p className="text-xs text-coral-dark mt-1">{locationError}</p>
@@ -316,7 +318,7 @@ export default function AddEditPlaceModal({
             />
           </Field>
 
-          <Field label="Ảnh mô tả quán">
+          <Field label="Ảnh mô tả địa điểm">
             <label
               htmlFor="place-photo-upload"
               className="flex items-center justify-center gap-2 border border-dashed border-charcoal/25 rounded-lg py-3 text-sm text-charcoal/60 cursor-pointer hover:border-ink hover:text-ink transition-colors"

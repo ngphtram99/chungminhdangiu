@@ -97,6 +97,7 @@ export default function RandomPage() {
       district: values.district || null,
       lat: values.lat,
       lng: values.lng,
+      category: values.category || null,
     };
 
     if (editingPlace) {
@@ -165,8 +166,8 @@ export default function RandomPage() {
     if (pool.length === 0) {
       alert(
         mode === "want_to_go"
-          ? "Chưa có quán nào ở mục \u0022Muốn đi\u0022."
-          : "Chưa có quán nào ở mục \u0022Đã đi\u0022."
+          ? "Chưa có địa điểm nào ở mục \u0022Muốn đi\u0022."
+          : "Chưa có địa điểm nào ở mục \u0022Đã đi\u0022."
       );
       return;
     }
@@ -237,10 +238,10 @@ export default function RandomPage() {
       ) : places.length === 0 && visitedPlaces.length === 0 ? (
         <div className="paper-card rounded-xl border-[3px] border-ink shadow-[4px_4px_0_0_#1A1A1A] p-8 text-center max-w-sm">
           <p className="font-display text-lg italic mb-1">
-            Chưa có quán nào cả
+            Chưa có địa điểm nào cả
           </p>
           <p className="text-charcoal/60 text-sm">
-            Bấm nút &ldquo;+&rdquo; góc dưới bên phải để thêm quán nhé.
+            Bấm nút &ldquo;+&rdquo; góc dưới bên phải để thêm địa điểm nhé.
           </p>
         </div>
       ) : (
@@ -251,7 +252,7 @@ export default function RandomPage() {
                 <div className="flex items-center justify-center gap-1.5 text-coral-dark mb-1.5">
                   <PartyPopper size={14} />
                   <span className="text-[10px] font-mono uppercase tracking-wide">
-                    Đi quán này nè!
+                    Đi địa điểm này nè!
                   </span>
                 </div>
                 <p className="font-display italic text-base sm:text-lg text-ink mb-1.5">
@@ -286,8 +287,8 @@ export default function RandomPage() {
 
           <p className="text-[10px] sm:text-xs text-charcoal/40 font-mono mt-2 mb-4">
             {spinMode === "want_to_go"
-              ? `${places.length} quán trong danh sách "Muốn đi"`
-              : `${visitedPlaces.length} quán trong danh sách "Đã đi"`}
+              ? `${places.length} địa điểm trong danh sách "Muốn đi"`
+              : `${visitedPlaces.length} địa điểm trong danh sách "Đã đi"`}
           </p>
 
           <div className="w-full text-left">
@@ -357,7 +358,7 @@ export default function RandomPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center px-5 bg-ink/40">
           <div className="paper-card rounded-xl border-[3px] border-ink shadow-[5px_5px_0_0_#1A1A1A] p-5 sm:p-6 w-full max-w-sm text-center">
             <div className="flex items-center justify-between mb-3">
-              <p className="font-display italic text-lg text-ink">Quay quán nào?</p>
+              <p className="font-display italic text-lg text-ink">Quay địa điểm nào?</p>
               <button
                 onClick={() => setShowSpinChoice(false)}
                 className="text-charcoal/50 hover:text-ink transition-colors"

@@ -15,7 +15,10 @@ export interface Place {
   district: string | null;
   lat: number | null;
   lng: number | null;
+  category: string | null;
 }
+
+export const CATEGORY_PRESETS = ["Ăn uống", "Cà phê", "Giải trí"];
 
 export const STATUS_LABEL: Record<PlaceStatus, string> = {
   visited: "Đã đi",
