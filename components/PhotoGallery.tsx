@@ -52,6 +52,13 @@ export default function PhotoGallery() {
           );
         }
       )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "couple_profile" },
+        () => {
+          fetchProfile();
+        }
+      )
       .subscribe();
 
     return () => {
