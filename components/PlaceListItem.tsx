@@ -2,13 +2,19 @@
 
 import { Place, STATUS_LABEL } from "@/lib/types";
 import { buildDirectionsLink } from "@/lib/maps";
-import { MapPin, Trash2, MapPinned, Check } from "lucide-react";
+import { MapPin, Trash2, MapPinned, Check, Star } from "lucide-react";
 
 const STATUS_PILL: Record<Place["status"], string> = {
   visited: "bg-sage/15 text-sage-dark",
   want_to_go: "bg-coral/15 text-coral-dark",
   not_yet: "bg-mustard/20 text-mustard-dark",
 };
+
+function formatDate(dateStr: string): string {
+  const [y, m, d] = dateStr.split("-");
+  if (!y || !m || !d) return dateStr;
+  return `${d}/${m}/${y}`;
+}
 
 export default function PlaceListItem({
   place,
@@ -50,7 +56,7 @@ export default function PlaceListItem({
           <h3 className="font-display text-sm sm:text-base font-semibold leading-snug truncate">
             {place.name}
           </h3>
-          <div className="flex items-center gap-2 mt-1">
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
             <span
               className={`text-[10px] sm:text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_PILL[place.status]}`}
             >
@@ -58,13 +64,24 @@ export default function PlaceListItem({
             </span>
             {place.visited_date && (
               <span className="text-[10px] sm:text-xs text-charcoal/50 font-mono">
-                {place.visited_date}
+                {formatDate(place.visited_date)}
               </span>
             )}
+            {place.status === "visited" && place.rating ? (
+              <span className="flex items-center gap-0.5">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star
+                    key={i}
+                    size={11}
+                    className={i < place.rating! ? "fill-mustard text-mustard" : "text-charcoal/20"}
+                  />
+                ))}
+              </span>
+            ) : null}
           </div>
         </button>
 
-        <a
+        
           href={directionsUrl}
           target="_blank"
           rel="noopener noreferrer"
