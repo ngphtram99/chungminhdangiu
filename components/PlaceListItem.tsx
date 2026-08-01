@@ -2,7 +2,7 @@
 
 import { Place, STATUS_LABEL } from "@/lib/types";
 import { buildDirectionsLink } from "@/lib/maps";
-import { MapPin, Trash2, MapPinned } from "lucide-react";
+import { MapPin, Trash2, MapPinned, Check } from "lucide-react";
 
 const STATUS_PILL: Record<Place["status"], string> = {
   visited: "bg-sage/15 text-sage-dark",
@@ -14,20 +14,24 @@ export default function PlaceListItem({
   place,
   onEdit,
   onDelete,
+  onMarkVisited,
+  extraBadge,
 }: {
   place: Place;
   onEdit: () => void;
   onDelete: () => void;
+  onMarkVisited?: () => void;
+  extraBadge?: React.ReactNode;
 }) {
   const thumb = place.photo_links?.[0];
   const directionsUrl = place.maps_link || buildDirectionsLink(place.name, place.address);
 
   return (
-    <div className="flex items-center gap-3 paper-card rounded-2xl p-2.5 sm:p-3">
+    <div className="flex items-center gap-3 paper-card rounded-lg border-[3px] border-ink shadow-[4px_4px_0_0_#1A1A1A] p-2.5 sm:p-3 overflow-hidden">
       <button
         onClick={onEdit}
         aria-label={`Sửa ${place.name}`}
-        className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden shrink-0 bg-lilac flex items-center justify-center"
+        className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden shrink-0 bg-lilac border-2 border-ink flex items-center justify-center"
       >
         {thumb ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -74,13 +78,28 @@ export default function PlaceListItem({
         </a>
       </div>
 
-      <button
-        onClick={onDelete}
-        aria-label={`Xoá ${place.name}`}
-        className="p-2 rounded-full hover:bg-coral/10 text-coral shrink-0"
-      >
-        <Trash2 size={15} />
-      </button>
+      <div className="flex flex-col items-end gap-1.5 shrink-0">
+        <div className="flex items-center gap-1">
+          {onMarkVisited && (
+            <button
+              onClick={onMarkVisited}
+              aria-label={`Đánh dấu đã đi: ${place.name}`}
+              title="Đã đi rồi"
+              className="p-2 rounded-full hover:bg-sage/15 text-sage-dark"
+            >
+              <Check size={15} />
+            </button>
+          )}
+          <button
+            onClick={onDelete}
+            aria-label={`Xoá ${place.name}`}
+            className="p-2 rounded-full hover:bg-coral/10 text-coral"
+          >
+            <Trash2 size={15} />
+          </button>
+        </div>
+        {extraBadge}
+      </div>
     </div>
   );
 }

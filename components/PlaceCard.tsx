@@ -21,7 +21,7 @@ export default function PlaceCard({
   const extraPhotos = place.photo_links && place.photo_links.length > 1 ? place.photo_links.slice(1) : [];
 
   return (
-    <article className="paper-card rounded-2xl overflow-hidden shadow-lg shadow-ink-dark/30 text-charcoal flex flex-col">
+    <article className="paper-card rounded-lg overflow-hidden border-[3px] border-ink shadow-[5px_5px_0_0_#1A1A1A] text-charcoal flex flex-col">
       <div className="aspect-[4/3] w-full bg-ink-light/10 relative">
         {heroPhoto ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -88,7 +88,7 @@ export default function PlaceCard({
         {extraPhotos.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {extraPhotos.map((link, i) => (
-              <a key={i} href={link} target="_blank" rel="noopener noreferrer" className="w-11 h-11 sm:w-12 sm:h-12 rounded-lg overflow-hidden shrink-0 ring-1 ring-charcoal/10 hover:ring-ink transition-all">
+              <a key={i} href={link} target="_blank" rel="noopener noreferrer" className="w-11 h-11 sm:w-12 sm:h-12 rounded-md overflow-hidden shrink-0 border-2 border-ink transition-all">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={link}

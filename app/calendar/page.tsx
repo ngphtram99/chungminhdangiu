@@ -44,9 +44,11 @@ export default function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
   const [saving, setSaving] = useState(false);
+  const [photosByDate, setPhotosByDate] = useState<Record<string, { url: string; name: string }[]>>({});
 
   useEffect(() => {
     fetchNotes();
+    fetchVisitedPhotos();
     const channel = supabase
       .channel("calendar_notes_changes")
       .on(
@@ -55,8 +57,17 @@ export default function CalendarPage() {
         () => fetchNotes()
       )
       .subscribe();
+    const placesChannel = supabase
+      .channel("calendar_places_changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "places" },
+        () => fetchVisitedPhotos()
+      )
+      .subscribe();
     return () => {
       supabase.removeChannel(channel);
+      supabase.removeChannel(placesChannel);
     };
   }, [year]);
 
@@ -75,6 +86,26 @@ export default function CalendarPage() {
       setNotes(map);
     }
     setLoading(false);
+  }
+
+  async function fetchVisitedPhotos() {
+    const { data, error } = await supabase
+      .from("places")
+      .select("name, visited_date, photo_links")
+      .eq("status", "visited")
+      .gte("visited_date", `${year}-01-01`)
+      .lte("visited_date", `${year}-12-31`);
+    if (!error && data) {
+      const map: Record<string, { url: string; name: string }[]> = {};
+      (data as { name: string; visited_date: string | null; photo_links: string[] | null }[]).forEach((p) => {
+        if (!p.visited_date) return;
+        const photo = p.photo_links && p.photo_links.length > 0 ? p.photo_links[0] : null;
+        if (!photo) return;
+        if (!map[p.visited_date]) map[p.visited_date] = [];
+        map[p.visited_date].push({ url: photo, name: p.name });
+      });
+      setPhotosByDate(map);
+    }
   }
 
   function openDay(dateKey: string) {
@@ -192,7 +223,7 @@ export default function CalendarPage() {
           {months.map((m) => {
             const cells = getMonthGrid(year, m);
             return (
-              <div key={m} className="paper-card rounded-2xl p-2.5 sm:p-4">
+              <div key={m} className="paper-card rounded-lg border-2 border-ink p-2.5 sm:p-4">
                 <button
                   onClick={() => zoomIntoMonth(m)}
                   className="w-full flex items-center justify-center gap-1.5 mb-2 group"
@@ -230,8 +261,15 @@ export default function CalendarPage() {
                         }`}
                       >
                         {d}
-                        {hasNote && (
-                          <span className="absolute bottom-0.5 w-1 h-1 rounded-full bg-coral-dark" />
+                        {(hasNote || (photosByDate[dateKey] && photosByDate[dateKey].length > 0)) && (
+                          <span className="absolute bottom-0.5 flex items-center gap-0.5">
+                            {hasNote && (
+                              <span className="w-1 h-1 rounded-full bg-coral-dark" />
+                            )}
+                            {photosByDate[dateKey] && photosByDate[dateKey].length > 0 && (
+                              <span className="w-1 h-1 rounded-full bg-sage" />
+                            )}
+                          </span>
                         )}
                       </button>
                     );
@@ -242,7 +280,7 @@ export default function CalendarPage() {
           })}
         </div>
       ) : (
-        <div className="paper-card rounded-2xl p-4 sm:p-8 pb-8 sm:pb-10 max-w-xl mx-auto">
+        <div className="paper-card rounded-xl border-[3px] border-ink shadow-[5px_5px_0_0_#1A1A1A] p-4 sm:p-8 pb-8 sm:pb-10 max-w-xl mx-auto">
           <div className="grid grid-cols-7 gap-y-2 text-center mb-1">
             {WEEKDAY_LABELS.map((w) => (
               <span
@@ -281,6 +319,24 @@ export default function CalendarPage() {
                       {note.content}
                     </span>
                   )}
+                  {photosByDate[dateKey] && photosByDate[dateKey].length > 0 && (
+                    <span className="flex items-center justify-center mt-1 h-4 sm:h-5">
+                      {photosByDate[dateKey].slice(0, 4).map((p, i) => (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          key={i}
+                          src={p.url}
+                          alt={p.name}
+                          className="w-4 h-4 sm:w-5 sm:h-5 rounded-full border-2 border-paper object-cover"
+                          style={{
+                            marginLeft: i === 0 ? 0 : "-6px",
+                            transform: `rotate(${(i - 1.5) * 12}deg)`,
+                            zIndex: 10 - i,
+                          }}
+                        />
+                      ))}
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -290,7 +346,7 @@ export default function CalendarPage() {
 
       {selectedDate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-5 bg-ink/40">
-          <div className="paper-card rounded-2xl p-5 sm:p-6 w-full max-w-sm">
+          <div className="paper-card rounded-xl border-[3px] border-ink shadow-[5px_5px_0_0_#1A1A1A] p-5 sm:p-6 w-full max-w-sm">
             <div className="flex items-center justify-between mb-3">
               <p className="font-display italic text-lg text-ink">
                 {selectedDate.split("-").reverse().join("/")}
@@ -310,6 +366,34 @@ export default function CalendarPage() {
               rows={4}
               className="w-full rounded-xl border border-charcoal/15 bg-paper px-3 py-2.5 text-sm text-charcoal focus:outline-none focus:border-coral resize-none"
             />
+
+            {selectedDate && photosByDate[selectedDate] && photosByDate[selectedDate].length > 0 && (
+              <div className="mt-4">
+                <p className="text-xs text-charcoal/50 font-mono mb-2">
+                  Quán đã đi hôm đó:
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {photosByDate[selectedDate].map((p, i) => (
+                    <div
+                      key={i}
+                      className="flex flex-col items-center gap-1 w-16"
+                    >
+                      <div className="w-14 h-14 rounded-lg overflow-hidden border-2 border-ink">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={p.url}
+                          alt={p.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <span className="text-[9px] text-charcoal/60 text-center leading-tight line-clamp-2">
+                        {p.name}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="flex items-center justify-between mt-4 gap-2">
               {notes[selectedDate] ? (
                 <button
@@ -326,7 +410,7 @@ export default function CalendarPage() {
               <button
                 onClick={saveNote}
                 disabled={saving}
-                className="bg-coral hover:bg-coral-dark text-paper text-sm font-semibold px-5 py-2 rounded-full transition-colors disabled:opacity-60"
+                className="bg-coral hover:bg-coral-dark text-paper text-sm font-semibold px-5 py-2 rounded-lg border-2 border-ink shadow-[3px_3px_0_0_#1A1A1A] transition-colors disabled:opacity-60"
               >
                 {saving ? "Đang lưu..." : "Lưu"}
               </button>

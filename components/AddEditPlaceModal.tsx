@@ -53,9 +53,13 @@ export default function AddEditPlaceModal({
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [gettingLocation, setGettingLocation] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [isCustomDistrict, setIsCustomDistrict] = useState(false);
 
   useEffect(() => {
     if (initial) {
+      const initialDistrict = initial.district || "";
+      const isKnown = HCMC_DISTRICTS.includes(initialDistrict);
+      setIsCustomDistrict(!!initialDistrict && !isKnown);
       setValues({
         name: initial.name,
         address: initial.address,
@@ -66,11 +70,12 @@ export default function AddEditPlaceModal({
         notes: initial.notes || "",
         photo_links: initial.photo_links || [],
         added_by: initial.added_by || "",
-        district: initial.district || "",
+        district: initialDistrict,
         lat: initial.lat ?? null,
         lng: initial.lng ?? null,
       });
     } else {
+      setIsCustomDistrict(false);
       setValues({ ...EMPTY, status: lockedStatus || EMPTY.status });
     }
   }, [initial, lockedStatus]);
@@ -188,10 +193,18 @@ export default function AddEditPlaceModal({
             />
           </Field>
 
-          <Field label="Quận">
+          <Field label="Quận / Tỉnh / Quốc gia">
             <select
-              value={values.district}
-              onChange={(e) => setValues((v) => ({ ...v, district: e.target.value }))}
+              value={isCustomDistrict ? "__custom__" : values.district}
+              onChange={(e) => {
+                if (e.target.value === "__custom__") {
+                  setIsCustomDistrict(true);
+                  setValues((v) => ({ ...v, district: "" }));
+                } else {
+                  setIsCustomDistrict(false);
+                  setValues((v) => ({ ...v, district: e.target.value }));
+                }
+              }}
               className="input"
             >
               <option value="">-- Chọn quận --</option>
@@ -200,7 +213,17 @@ export default function AddEditPlaceModal({
                   {d}
                 </option>
               ))}
+              <option value="__custom__">Khác (tự nhập)</option>
             </select>
+            {isCustomDistrict && (
+              <input
+                value={values.district}
+                onChange={(e) => setValues((v) => ({ ...v, district: e.target.value }))}
+                placeholder="Vd: Đà Lạt, Nha Trang, Nhật Bản..."
+                className="input mt-2"
+                autoFocus
+              />
+            )}
           </Field>
 
           <Field label="Link Google Maps (không bắt buộc)">

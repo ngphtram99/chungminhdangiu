@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Place } from "@/lib/types";
 import PlaceListItem from "@/components/PlaceListItem";
 import AddEditPlaceModal, { PlaceFormValues } from "@/components/AddEditPlaceModal";
-import { Plus } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 
 export default function PlacesPage() {
   const [places, setPlaces] = useState<Place[]>([]);
@@ -13,6 +13,7 @@ export default function PlacesPage() {
   const [error, setError] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingPlace, setEditingPlace] = useState<Place | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     fetchPlaces();
@@ -23,6 +24,7 @@ export default function PlacesPage() {
     const { data, error } = await supabase
       .from("places")
       .select("*")
+      .eq("status", "visited")
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -84,32 +86,61 @@ export default function PlacesPage() {
     fetchPlaces();
   }
 
+  const filteredPlaces = useMemo(() => {
+    const q = searchTerm.trim().toLowerCase();
+    if (!q) return places;
+    return places.filter((p) => {
+      const name = p.name?.toLowerCase() || "";
+      const address = p.address?.toLowerCase() || "";
+      const district = p.district?.toLowerCase() || "";
+      return name.includes(q) || address.includes(q) || district.includes(q);
+    });
+  }, [places, searchTerm]);
+
   return (
     <main className="max-w-3xl mx-auto px-4 sm:px-8 pt-6 sm:pt-14">
-      <header className="mb-5 sm:mb-8">
+      <header className="mb-4 sm:mb-6">
         <h1 className="font-display italic text-2xl sm:text-4xl font-semibold text-ink leading-tight">
           Địa điểm của tụi mình
         </h1>
       </header>
 
+      <div className="relative mb-5 sm:mb-8">
+        <Search
+          size={16}
+          className="absolute left-3.5 top-1/2 -translate-y-1/2 text-charcoal/40"
+        />
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Tìm theo tên, địa chỉ, hoặc quận..."
+          className="w-full paper-card rounded-lg border-[3px] border-ink shadow-[3px_3px_0_0_#1A1A1A] pl-10 pr-4 py-2.5 text-sm text-charcoal placeholder:text-charcoal/40 focus:outline-none"
+        />
+      </div>
+
       {error && (
-        <div className="paper-card text-charcoal rounded-xl p-5 mb-6 border border-coral/40">
+        <div className="paper-card text-charcoal rounded-xl border-[3px] border-coral p-5 mb-6">
           {error}
         </div>
       )}
 
       {loading ? (
         <p className="text-charcoal/60 font-mono text-sm">Đang tải...</p>
-      ) : places.length === 0 ? (
-        <div className="paper-card text-charcoal rounded-2xl p-8 sm:p-10 text-center">
-          <p className="font-display text-lg italic mb-1">Chưa có gì ở đây cả</p>
+      ) : filteredPlaces.length === 0 ? (
+        <div className="paper-card text-charcoal rounded-xl border-[3px] border-ink shadow-[4px_4px_0_0_#1A1A1A] p-8 sm:p-10 text-center">
+          <p className="font-display text-lg italic mb-1">
+            {places.length === 0 ? "Chưa có gì ở đây cả" : "Không tìm thấy kết quả"}
+          </p>
           <p className="text-charcoal/60 text-sm">
-            Bấm nút + góc dưới để bắt đầu ghi lại kỷ niệm nhé.
+            {places.length === 0
+              ? "Bấm nút + góc dưới để bắt đầu ghi lại kỷ niệm nhé."
+              : "Thử từ khoá khác xem sao."}
           </p>
         </div>
       ) : (
         <div className="flex flex-col gap-2.5 sm:gap-3">
-          {places.map((place) => (
+          {filteredPlaces.map((place) => (
             <PlaceListItem
               key={place.id}
               place={place}
@@ -129,7 +160,7 @@ export default function PlacesPage() {
           setModalOpen(true);
         }}
         aria-label="Thêm địa điểm"
-        className="fixed right-4 sm:right-8 bottom-[calc(5.5rem+0.75rem)] sm:bottom-24 z-40 w-14 h-14 rounded-full bg-coral hover:bg-coral-dark text-paper shadow-xl shadow-ink-dark/30 flex items-center justify-center transition-colors"
+        className="fixed right-4 sm:right-8 bottom-[calc(5.5rem+0.75rem)] sm:bottom-24 z-40 w-14 h-14 rounded-lg border-[3px] border-ink bg-coral hover:bg-coral-dark text-paper shadow-[4px_4px_0_0_#1A1A1A] flex items-center justify-center transition-colors"
       >
         <Plus size={24} />
       </button>

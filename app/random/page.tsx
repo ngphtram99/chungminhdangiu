@@ -5,8 +5,8 @@ import { supabase } from "@/lib/supabase";
 import { Place } from "@/lib/types";
 import { distanceKm } from "@/lib/geo";
 import AddEditPlaceModal, { PlaceFormValues } from "@/components/AddEditPlaceModal";
-import PlaceCard from "@/components/PlaceCard";
-import { Shuffle, MapPin, ExternalLink, PartyPopper, Plus, Navigation } from "lucide-react";
+import PlaceListItem from "@/components/PlaceListItem";
+import { Shuffle, MapPin, ExternalLink, PartyPopper, Plus, Navigation, X, Check } from "lucide-react";
 
 const NEARBY_KM = 5;
 
@@ -22,9 +22,15 @@ export default function RandomPage() {
   const [editingPlace, setEditingPlace] = useState<Place | null>(null);
   const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [visitedTarget, setVisitedTarget] = useState<Place | null>(null);
+  const [customDate, setCustomDate] = useState("");
+  const [visitedPlaces, setVisitedPlaces] = useState<Place[]>([]);
+  const [spinMode, setSpinMode] = useState<"want_to_go" | "visited">("want_to_go");
+  const [showSpinChoice, setShowSpinChoice] = useState(false);
 
   useEffect(() => {
     fetchPlaces();
+    fetchVisitedPlaces();
     if (typeof window !== "undefined" && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
@@ -50,6 +56,15 @@ export default function RandomPage() {
       .order("created_at", { ascending: false });
     if (!error && data) setPlaces(data as Place[]);
     setLoading(false);
+  }
+
+  async function fetchVisitedPlaces() {
+    const { data, error } = await supabase
+      .from("places")
+      .select("*")
+      .eq("status", "visited")
+      .order("created_at", { ascending: false });
+    if (!error && data) setVisitedPlaces(data as Place[]);
   }
 
   async function handleSavePlace(values: PlaceFormValues) {
@@ -99,24 +114,58 @@ export default function RandomPage() {
     fetchPlaces();
   }
 
-  function spin() {
-    if (places.length === 0 || spinning) return;
+  function openMarkVisited(place: Place) {
+    setVisitedTarget(place);
+    setCustomDate(new Date().toISOString().slice(0, 10));
+  }
+
+  async function confirmMarkVisited(dateStr: string) {
+    if (!visitedTarget) return;
+    const { error } = await supabase
+      .from("places")
+      .update({ status: "visited", visited_date: dateStr })
+      .eq("id", visitedTarget.id);
+    if (error) {
+      alert("Lỗi khi cập nhật: " + error.message);
+      return;
+    }
+    if (result?.id === visitedTarget.id) setResult(null);
+    setVisitedTarget(null);
+    fetchPlaces();
+    fetchVisitedPlaces();
+  }
+
+  const currentPool = spinMode === "want_to_go" ? places : visitedPlaces;
+
+  function startSpin(mode: "want_to_go" | "visited") {
+    const pool = mode === "want_to_go" ? places : visitedPlaces;
+    if (pool.length === 0) {
+      alert(
+        mode === "want_to_go"
+          ? "Chưa có quán nào ở mục \u0022Muốn đi\u0022."
+          : "Chưa có quán nào ở mục \u0022Đã đi\u0022."
+      );
+      return;
+    }
+    setSpinMode(mode);
+    setShowSpinChoice(false);
     setResult(null);
     setSpinning(true);
+    setHighlightIndex(0);
 
     let ticks = 0;
     const totalTicks = 20 + Math.floor(Math.random() * 10);
 
     intervalRef.current = setInterval(function () {
       setHighlightIndex(function (prev) {
-        return (prev + 1) % places.length;
+        return (prev + 1) % pool.length;
       });
       ticks++;
       if (ticks >= totalTicks) {
         if (intervalRef.current) clearInterval(intervalRef.current);
-        const finalIndex = Math.floor(Math.random() * places.length);
+        const finalIndex = Math.floor(Math.random() * pool.length);
         setHighlightIndex(finalIndex);
-        setResult(places[finalIndex]);
+        setResult(pool[finalIndex]);
         setSpinning(false);
       }
     }, 90);
@@ -166,73 +215,72 @@ export default function RandomPage() {
 
       {loading ? (
         <p className="text-charcoal/60 font-mono text-sm">Đang tải...</p>
-      ) : places.length === 0 ? (
-        <div className="paper-card rounded-2xl p-8 text-center max-w-sm">
+      ) : places.length === 0 && visitedPlaces.length === 0 ? (
+        <div className="paper-card rounded-xl border-[3px] border-ink shadow-[4px_4px_0_0_#1A1A1A] p-8 text-center max-w-sm">
           <p className="font-display text-lg italic mb-1">
-            Chưa có quán nào ở mục &ldquo;Muốn đi&rdquo;
+            Chưa có quán nào cả
           </p>
           <p className="text-charcoal/60 text-sm">
-            Bấm nút &ldquo;+&rdquo; góc dưới bên trái để thêm quán nhé.
+            Bấm nút &ldquo;+&rdquo; góc dưới bên phải để thêm quán nhé.
           </p>
         </div>
       ) : (
         <>
-          <div className="paper-card rounded-2xl w-full max-w-sm p-6 sm:p-8 mb-5 sm:mb-6 min-h-[160px] flex flex-col items-center justify-center">
+          <div className="paper-card rounded-xl border-[3px] border-ink shadow-[4px_4px_0_0_#1A1A1A] w-full max-w-sm p-4 sm:p-5 mb-4 sm:mb-5 min-h-[130px] flex flex-col items-center justify-center">
             {result ? (
               <div>
-                <div className="flex items-center justify-center gap-1.5 text-coral-dark mb-2">
-                  <PartyPopper size={18} />
-                  <span className="text-xs font-mono uppercase tracking-wide">
+                <div className="flex items-center justify-center gap-1.5 text-coral-dark mb-1.5">
+                  <PartyPopper size={14} />
+                  <span className="text-[10px] font-mono uppercase tracking-wide">
                     Đi quán này nè!
                   </span>
                 </div>
-                <p className="font-display italic text-xl sm:text-2xl text-ink mb-2">
+                <p className="font-display italic text-base sm:text-lg text-ink mb-1.5">
                   {result.name}
                 </p>
-                <p className="text-xs sm:text-sm text-charcoal/60 flex items-center justify-center gap-1 mb-3">
-                  <MapPin size={13} className="shrink-0" />
+                <p className="text-[11px] sm:text-xs text-charcoal/60 flex items-center justify-center gap-1 mb-2">
+                  <MapPin size={11} className="shrink-0" />
                   <span className="line-clamp-2">{result.address}</span>
                 </p>
                 {result.maps_link && (
-                  <a href={result.maps_link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-coral-dark hover:text-coral text-xs sm:text-sm font-medium transition-colors">
+                  <a href={result.maps_link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-coral-dark hover:text-coral text-[11px] sm:text-xs font-medium transition-colors">
                     Xem trên Maps
-                    <ExternalLink size={13} />
+                    <ExternalLink size={11} />
                   </a>
                 )}
               </div>
             ) : (
               <p className={"font-display italic text-lg sm:text-xl text-ink transition-opacity " + highlightOpacityClass}>
-                {places[highlightIndex] ? places[highlightIndex].name : ""}
+                {currentPool[highlightIndex] ? currentPool[highlightIndex].name : ""}
               </p>
             )}
           </div>
 
           <button
-            onClick={spin}
+            onClick={() => setShowSpinChoice(true)}
             disabled={spinning}
-            className="inline-flex items-center gap-2 bg-coral hover:bg-coral-dark text-paper font-semibold px-6 py-3 rounded-full transition-colors disabled:opacity-60"
+            className="inline-flex items-center gap-2 bg-coral hover:bg-coral-dark text-paper font-semibold px-6 py-3 rounded-lg border-[3px] border-ink shadow-[4px_4px_0_0_#1A1A1A] transition-colors disabled:opacity-60"
           >
             <Shuffle size={18} className={spinning ? "animate-spin" : ""} />
             {spinning ? "Đang quay..." : result ? "Quay lại" : "Quay ngay"}
           </button>
 
-          <p className="text-[10px] sm:text-xs text-charcoal/40 font-mono mt-3 mb-8">
-            {places.length} quán trong danh sách &ldquo;Muốn đi&rdquo;
+          <p className="text-[10px] sm:text-xs text-charcoal/40 font-mono mt-2 mb-4">
+            {spinMode === "want_to_go"
+              ? `${places.length} quán trong danh sách "Muốn đi"`
+              : `${visitedPlaces.length} quán trong danh sách "Đã đi"`}
           </p>
 
           <div className="w-full text-left">
-            <h2 className="font-display italic text-xl sm:text-2xl text-ink mb-4 text-center">
-              Danh sách theo quận
-            </h2>
-            <div className="flex flex-col gap-8">
+            <div className="flex flex-col gap-6">
               {districtNames.map((district) => (
                 <div key={district}>
                   <h3 className="font-mono text-xs uppercase tracking-wide text-charcoal/50 mb-3">
                     {district} ({groupedByDistrict[district].length})
                   </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+                  <div className="flex flex-col gap-2.5 sm:gap-3">
                     {groupedByDistrict[district].map((place) => (
-                      <PlaceCard
+                      <PlaceListItem
                         key={place.id}
                         place={place}
                         onEdit={() => {
@@ -240,6 +288,7 @@ export default function RandomPage() {
                           setModalOpen(true);
                         }}
                         onDelete={() => handleDeletePlace(place)}
+                        onMarkVisited={() => openMarkVisited(place)}
                         extraBadge={
                           place.__distance != null && place.__distance <= NEARBY_KM ? (
                             <span className="inline-flex items-center gap-1 text-[10px] font-mono bg-sage/20 text-sage px-2 py-1 rounded-full">
@@ -268,8 +317,7 @@ export default function RandomPage() {
           setModalOpen(true);
         }}
         aria-label="Thêm địa điểm"
-        className="fixed left-4 z-50 inline-flex items-center justify-center w-12 h-12 rounded-full bg-coral hover:bg-coral-dark text-paper shadow-lg shadow-ink-dark/40 transition-colors"
-        style={{ bottom: "calc(6.5rem + env(safe-area-inset-bottom) + 12px)" }}
+        className="fixed right-4 sm:right-8 bottom-[calc(5.5rem+0.75rem)] sm:bottom-24 z-40 w-14 h-14 rounded-lg border-[3px] border-ink bg-coral hover:bg-coral-dark text-paper shadow-[4px_4px_0_0_#1A1A1A] flex items-center justify-center transition-colors"
       >
         <Plus size={20} />
       </button>
@@ -284,6 +332,86 @@ export default function RandomPage() {
           }}
           onSave={handleSavePlace}
         />
+      )}
+
+      {showSpinChoice && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-5 bg-ink/40">
+          <div className="paper-card rounded-xl border-[3px] border-ink shadow-[5px_5px_0_0_#1A1A1A] p-5 sm:p-6 w-full max-w-sm text-center">
+            <div className="flex items-center justify-between mb-3">
+              <p className="font-display italic text-lg text-ink">Quay quán nào?</p>
+              <button
+                onClick={() => setShowSpinChoice(false)}
+                className="text-charcoal/50 hover:text-ink transition-colors"
+                aria-label="Đóng"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="flex flex-col gap-2.5">
+              <button
+                onClick={() => startSpin("want_to_go")}
+                className="w-full bg-coral hover:bg-coral-dark text-paper font-semibold py-2.5 rounded-lg border-2 border-ink shadow-[3px_3px_0_0_#1A1A1A] transition-colors"
+              >
+                Chưa đi ({places.length})
+              </button>
+              <button
+                onClick={() => startSpin("visited")}
+                className="w-full bg-ink hover:bg-charcoal text-paper font-semibold py-2.5 rounded-lg border-2 border-ink transition-colors"
+              >
+                Đã đi ({visitedPlaces.length})
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {visitedTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-5 bg-ink/40">
+          <div className="paper-card rounded-xl border-[3px] border-ink shadow-[5px_5px_0_0_#1A1A1A] p-5 sm:p-6 w-full max-w-sm text-left">
+            <div className="flex items-center justify-between mb-1">
+              <p className="font-display italic text-lg text-ink">
+                Đánh dấu đã đi
+              </p>
+              <button
+                onClick={() => setVisitedTarget(null)}
+                className="text-charcoal/50 hover:text-ink transition-colors"
+                aria-label="Đóng"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <p className="text-sm text-charcoal/70 mb-4">
+              {visitedTarget.name}
+            </p>
+
+            <button
+              onClick={() => confirmMarkVisited(new Date().toISOString().slice(0, 10))}
+              className="w-full inline-flex items-center justify-center gap-2 bg-coral hover:bg-coral-dark text-paper font-semibold py-2.5 rounded-lg border-2 border-ink shadow-[3px_3px_0_0_#1A1A1A] transition-colors mb-3"
+            >
+              <Check size={16} />
+              Hôm nay
+            </button>
+
+            <p className="text-xs text-charcoal/50 font-mono mb-1.5">
+              Hoặc chọn ngày khác:
+            </p>
+            <div className="flex items-center gap-2">
+              <input
+                type="date"
+                value={customDate}
+                onChange={(e) => setCustomDate(e.target.value)}
+                className="flex-1 rounded-lg border-2 border-ink px-3 py-2 text-sm text-charcoal bg-paper focus:outline-none"
+              />
+              <button
+                onClick={() => confirmMarkVisited(customDate)}
+                disabled={!customDate}
+                className="bg-ink hover:bg-charcoal text-paper text-sm font-semibold px-4 py-2 rounded-lg border-2 border-ink transition-colors disabled:opacity-50"
+              >
+                Xác nhận
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </main>
   );
