@@ -160,7 +160,7 @@ export default function PlacesPage() {
           setModalOpen(true);
         }}
         aria-label="Thêm địa điểm"
-        className="fixed right-4 sm:right-8 bottom-[calc(5.5rem+0.75rem)] sm:bottom-24 z-40 w-14 h-14 rounded-lg border-[3px] border-ink bg-coral hover:bg-coral-dark text-paper shadow-[4px_4px_0_0_#1A1A1A] flex items-center justify-center transition-colors"
+        className="fixed right-4 sm:right-8 bottom-[calc(5.5rem+env(safe-area-inset-bottom)+0.75rem)] sm:bottom-[7.25rem] z-40 w-14 h-14 rounded-lg border-[3px] border-ink bg-coral hover:bg-coral-dark text-paper shadow-[4px_4px_0_0_#1A1A1A] flex items-center justify-center transition-colors"
       >
         <Plus size={24} />
       </button>
