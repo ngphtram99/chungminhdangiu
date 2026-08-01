@@ -163,7 +163,7 @@ export default function PhotoGallery() {
     <div className="w-full mt-10 text-left">
       <div className="flex items-center justify-between mb-2.5 sm:mb-4">
         <h2 className="font-display italic text-lg sm:text-2xl text-ink">
-          Realtime
+          Đang làm gì zạ?
         </h2>
         <button
           onClick={handleUploadClick}
