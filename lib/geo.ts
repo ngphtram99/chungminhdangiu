@@ -37,3 +37,20 @@ export function distanceKm(
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
+
+/**
+ * Cố gắng lấy toạ độ trực tiếp từ link Google Maps, nếu link đó có
+ * chứa dạng "@lat,lng" (loại link phổ biến khi chia sẻ vị trí trên bản đồ).
+ * Trả về null nếu không tìm thấy (ví dụ link chỉ chứa mã định danh nội bộ).
+ */
+export function extractLatLngFromMapsLink(
+  link: string | null
+): { lat: number; lng: number } | null {
+  if (!link) return null;
+  const match = link.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+  if (!match) return null;
+  const lat = parseFloat(match[1]);
+  const lng = parseFloat(match[2]);
+  if (isNaN(lat) || isNaN(lng)) return null;
+  return { lat, lng };
+}

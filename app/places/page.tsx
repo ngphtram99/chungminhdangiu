@@ -1,12 +1,19 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import { supabase } from "@/lib/supabase";
 import { Place } from "@/lib/types";
+import { extractLatLngFromMapsLink } from "@/lib/geo";
 import PlaceListItem from "@/components/PlaceListItem";
 import AddEditPlaceModal, { PlaceFormValues } from "@/components/AddEditPlaceModal";
 import CategoryFilter, { CategoryFilterValue, matchesCategory, getExtraCategories } from "@/components/CategoryFilter";
-import { Plus, Search } from "lucide-react";
+import type { MarkerPlace } from "@/components/PlacesMapView";
+import { Plus, Search, Map as MapIcon } from "lucide-react";
+
+const PlacesMapView = dynamic(() => import("@/components/PlacesMapView"), {
+  ssr: false,
+});
 
 export default function PlacesPage() {
   const [places, setPlaces] = useState<Place[]>([]);
@@ -16,6 +23,7 @@ export default function PlacesPage() {
   const [editingPlace, setEditingPlace] = useState<Place | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeCategory, setActiveCategory] = useState<CategoryFilterValue>("all");
+  const [mapOpen, setMapOpen] = useState(false);
 
   useEffect(() => {
     fetchPlaces();
@@ -118,6 +126,21 @@ export default function PlacesPage() {
 
   const extraCategories = useMemo(() => getExtraCategories(places), [places]);
 
+  const mappablePlaces: MarkerPlace[] = useMemo(() => {
+    return filteredPlaces
+      .map((p) => {
+        if (p.lat != null && p.lng != null) {
+          return { ...p, __lat: p.lat, __lng: p.lng };
+        }
+        const extracted = extractLatLngFromMapsLink(p.maps_link);
+        if (extracted) {
+          return { ...p, __lat: extracted.lat, __lng: extracted.lng };
+        }
+        return null;
+      })
+      .filter((p): p is MarkerPlace => p !== null);
+  }, [filteredPlaces]);
+
   return (
     <main className="max-w-3xl mx-auto px-4 sm:px-8 pt-4 sm:pt-8">
       <div className="relative mb-5 sm:mb-8">
@@ -173,16 +196,25 @@ export default function PlacesPage() {
         </div>
       )}
 
-      <button
-        onClick={() => {
-          setEditingPlace(null);
-          setModalOpen(true);
-        }}
-        aria-label="Thêm địa điểm"
-        className="fixed right-4 sm:right-8 bottom-[calc(5.5rem+env(safe-area-inset-bottom)+0.75rem)] sm:bottom-[7.25rem] z-40 w-14 h-14 rounded-lg border-[3px] border-ink bg-coral hover:bg-coral-dark text-paper shadow-[4px_4px_0_0_#1A1A1A] flex items-center justify-center transition-colors"
-      >
-        <Plus size={24} />
-      </button>
+      <div className="fixed right-4 sm:right-8 bottom-[calc(5.5rem+env(safe-area-inset-bottom)+0.75rem)] sm:bottom-[7.25rem] z-40 flex flex-col items-center gap-3">
+        <button
+          onClick={() => setMapOpen(true)}
+          aria-label="Xem bản đồ"
+          className="w-14 h-14 rounded-lg border-[3px] border-ink bg-ink hover:bg-charcoal text-paper shadow-[4px_4px_0_0_#1A1A1A] flex items-center justify-center transition-colors"
+        >
+          <MapIcon size={22} />
+        </button>
+        <button
+          onClick={() => {
+            setEditingPlace(null);
+            setModalOpen(true);
+          }}
+          aria-label="Thêm địa điểm"
+          className="w-14 h-14 rounded-lg border-[3px] border-ink bg-coral hover:bg-coral-dark text-paper shadow-[4px_4px_0_0_#1A1A1A] flex items-center justify-center transition-colors"
+        >
+          <Plus size={24} />
+        </button>
+      </div>
 
       {modalOpen && (
         <AddEditPlaceModal
@@ -193,6 +225,10 @@ export default function PlacesPage() {
           }}
           onSave={handleSave}
         />
+      )}
+
+      {mapOpen && (
+        <PlacesMapView places={mappablePlaces} onClose={() => setMapOpen(false)} />
       )}
     </main>
   );
