@@ -267,8 +267,8 @@ export default function RandomPage() {
         <>
           {!hasStartedSpin ? (
             <div className="paper-card rounded-xl border-[3px] border-ink shadow-[4px_4px_0_0_#1A1A1A] w-full max-w-sm p-5 sm:p-6 mb-4 sm:mb-5 min-h-[160px] flex flex-col items-center justify-center gap-4">
-              <p className={"font-display italic text-lg sm:text-xl text-ink transition-opacity " + highlightOpacityClass}>
-                {currentPool[highlightIndex] ? currentPool[highlightIndex].name : ""}
+              <p className="font-display italic text-lg sm:text-xl text-ink/30">
+                ???
               </p>
               <button
                 onClick={() => setShowSpinChoice(true)}
