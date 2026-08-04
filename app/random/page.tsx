@@ -6,7 +6,7 @@ import { Place } from "@/lib/types";
 import { distanceKm } from "@/lib/geo";
 import AddEditPlaceModal, { PlaceFormValues } from "@/components/AddEditPlaceModal";
 import PlaceListItem from "@/components/PlaceListItem";
-import CategoryFilter, { CategoryFilterValue, matchesCategory } from "@/components/CategoryFilter";
+import CategoryFilter, { CategoryFilterValue, matchesCategory, getExtraCategories } from "@/components/CategoryFilter";
 import { Shuffle, MapPin, ExternalLink, PartyPopper, Plus, Navigation, X, Check } from "lucide-react";
 
 const NEARBY_KM = 5;
@@ -237,6 +237,11 @@ export default function RandomPage() {
     return groups;
   }, [placesWithDistance, activeCategory]);
 
+  const extraCategories = useMemo(
+    () => getExtraCategories([...places, ...visitedPlaces]),
+    [places, visitedPlaces]
+  );
+
   const districtNames = Object.keys(groupedByDistrict).sort((a, b) => {
     if (a === "Chưa phân loại") return 1;
     if (b === "Chưa phân loại") return -1;
@@ -304,7 +309,7 @@ export default function RandomPage() {
           </p>
 
           <div className="w-full mb-4 sm:mb-6">
-            <CategoryFilter active={activeCategory} onChange={setActiveCategory} />
+            <CategoryFilter active={activeCategory} onChange={setActiveCategory} extraCategories={extraCategories} />
           </div>
 
           <div className="w-full text-left">

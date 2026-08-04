@@ -1,38 +1,51 @@
 "use client";
 
-import { CATEGORY_PRESETS } from "@/lib/types";
+import { Place, CATEGORY_PRESETS } from "@/lib/types";
 
-export type CategoryFilterValue = "all" | "other" | (typeof CATEGORY_PRESETS)[number];
-
-const CATEGORY_CHIPS: { value: CategoryFilterValue; label: string }[] = [
-  { value: "all", label: "Tất cả" },
-  { value: "Ăn uống", label: "🍜 Ăn uống" },
-  { value: "Cà phê", label: "☕ Cà phê" },
-  { value: "Giải trí", label: "🎈 Giải trí" },
-  { value: "other", label: "Khác" },
-];
+export type CategoryFilterValue = string; // "all" hoặc đúng tên phân loại
 
 export function matchesCategory(
   placeCategory: string | null,
   filter: CategoryFilterValue
 ): boolean {
   if (filter === "all") return true;
-  if (filter === "other") {
-    return !!placeCategory && !CATEGORY_PRESETS.includes(placeCategory);
-  }
   return placeCategory === filter;
 }
+
+export function getExtraCategories(places: Place[]): string[] {
+  const set = new Set<string>();
+  places.forEach((p) => {
+    if (p.category && !CATEGORY_PRESETS.includes(p.category)) {
+      set.add(p.category);
+    }
+  });
+  return Array.from(set).sort((a, b) => a.localeCompare(b, "vi"));
+}
+
+const PRESET_ICON: Record<string, string> = {
+  "Ăn uống": "🍜",
+  "Cà phê": "☕",
+  "Giải trí": "🎈",
+};
 
 export default function CategoryFilter({
   active,
   onChange,
+  extraCategories = [],
 }: {
   active: CategoryFilterValue;
   onChange: (v: CategoryFilterValue) => void;
+  extraCategories?: string[];
 }) {
+  const chips: { value: CategoryFilterValue; label: string }[] = [
+    { value: "all", label: "Tất cả" },
+    ...CATEGORY_PRESETS.map((c) => ({ value: c, label: `${PRESET_ICON[c] || ""} ${c}` })),
+    ...extraCategories.map((c) => ({ value: c, label: `📍 ${c}` })),
+  ];
+
   return (
     <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
-      {CATEGORY_CHIPS.map((chip) => {
+      {chips.map((chip) => {
         const isActive = active === chip.value;
         return (
           <button

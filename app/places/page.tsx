@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { Place } from "@/lib/types";
 import PlaceListItem from "@/components/PlaceListItem";
 import AddEditPlaceModal, { PlaceFormValues } from "@/components/AddEditPlaceModal";
-import CategoryFilter, { CategoryFilterValue, matchesCategory } from "@/components/CategoryFilter";
+import CategoryFilter, { CategoryFilterValue, matchesCategory, getExtraCategories } from "@/components/CategoryFilter";
 import { Plus, Search } from "lucide-react";
 
 export default function PlacesPage() {
@@ -116,6 +116,8 @@ export default function PlacesPage() {
     });
   }, [places, searchTerm, activeCategory]);
 
+  const extraCategories = useMemo(() => getExtraCategories(places), [places]);
+
   return (
     <main className="max-w-3xl mx-auto px-4 sm:px-8 pt-4 sm:pt-8">
       <div className="relative mb-5 sm:mb-8">
@@ -133,7 +135,7 @@ export default function PlacesPage() {
       </div>
 
       <div className="mb-5 sm:mb-8">
-        <CategoryFilter active={activeCategory} onChange={setActiveCategory} />
+        <CategoryFilter active={activeCategory} onChange={setActiveCategory} extraCategories={extraCategories} />
       </div>
 
       {error && (
