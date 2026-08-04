@@ -56,12 +56,18 @@ export default function AddEditPlaceModal({
   const [gettingLocation, setGettingLocation] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [isCustomDistrict, setIsCustomDistrict] = useState(false);
+  const [isCustomCategory, setIsCustomCategory] = useState(false);
 
   useEffect(() => {
     if (initial) {
       const initialDistrict = initial.district || "";
-      const isKnown = HCMC_DISTRICTS.includes(initialDistrict);
-      setIsCustomDistrict(!!initialDistrict && !isKnown);
+      const isKnownDistrict = HCMC_DISTRICTS.includes(initialDistrict);
+      setIsCustomDistrict(!!initialDistrict && !isKnownDistrict);
+
+      const initialCategory = initial.category || "";
+      const isKnownCategory = CATEGORY_PRESETS.includes(initialCategory);
+      setIsCustomCategory(!!initialCategory && !isKnownCategory);
+
       setValues({
         name: initial.name,
         address: initial.address,
@@ -75,9 +81,11 @@ export default function AddEditPlaceModal({
         district: initialDistrict,
         lat: initial.lat ?? null,
         lng: initial.lng ?? null,
+        category: initialCategory,
       });
     } else {
       setIsCustomDistrict(false);
+      setIsCustomCategory(false);
       setValues({ ...EMPTY, status: lockedStatus || EMPTY.status });
     }
   }, [initial, lockedStatus]);
@@ -276,6 +284,37 @@ export default function AddEditPlaceModal({
               </div>
             </Field>
           )}
+
+          <Field label="Phân loại">
+            <select
+              value={isCustomCategory ? "__custom__" : values.category}
+              onChange={(e) => {
+                if (e.target.value === "__custom__") {
+                  setIsCustomCategory(true);
+                  setValues((v) => ({ ...v, category: "" }));
+                } else {
+                  setIsCustomCategory(false);
+                  setValues((v) => ({ ...v, category: e.target.value }));
+                }
+              }}
+              className="input"
+            >
+              <option value="">-- Chọn phân loại --</option>
+              <option value="Ăn uống">🍜 Ăn uống</option>
+              <option value="Cà phê">☕ Cà phê</option>
+              <option value="Giải trí">🎈 Giải trí</option>
+              <option value="__custom__">Khác (tự nhập)</option>
+            </select>
+            {isCustomCategory && (
+              <input
+                value={values.category}
+                onChange={(e) => setValues((v) => ({ ...v, category: e.target.value }))}
+                placeholder="Vd: Xem phim, Dạo phố, Mua sắm..."
+                className="input mt-2"
+                autoFocus
+              />
+            )}
+          </Field>
 
           {values.status === "visited" && (
             <div className="grid grid-cols-2 gap-4">
