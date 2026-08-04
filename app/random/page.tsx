@@ -31,6 +31,7 @@ export default function RandomPage() {
   const [spinMode, setSpinMode] = useState<"want_to_go" | "visited">("want_to_go");
   const [showSpinChoice, setShowSpinChoice] = useState(false);
   const [activeCategory, setActiveCategory] = useState<CategoryFilterValue>("all");
+  const [hasStartedSpin, setHasStartedSpin] = useState(false);
 
   useEffect(() => {
     fetchPlaces();
@@ -182,6 +183,7 @@ export default function RandomPage() {
       );
       return;
     }
+    setHasStartedSpin(true);
     setSpinMode(mode);
     setShowSpinChoice(false);
     setResult(null);
@@ -263,44 +265,61 @@ export default function RandomPage() {
         </div>
       ) : (
         <>
-          <div className="paper-card rounded-xl border-[3px] border-ink shadow-[4px_4px_0_0_#1A1A1A] w-full max-w-sm p-4 sm:p-5 mb-4 sm:mb-5 min-h-[130px] flex flex-col items-center justify-center">
-            {result ? (
-              <div>
-                <div className="flex items-center justify-center gap-1.5 text-coral-dark mb-1.5">
-                  <PartyPopper size={14} />
-                  <span className="text-[10px] font-mono uppercase tracking-wide">
-                    Đi địa điểm này nè!
-                  </span>
-                </div>
-                <p className="font-display italic text-base sm:text-lg text-ink mb-1.5">
-                  {result.name}
-                </p>
-                <p className="text-[11px] sm:text-xs text-charcoal/60 flex items-center justify-center gap-1 mb-2">
-                  <MapPin size={11} className="shrink-0" />
-                  <span className="line-clamp-2">{result.address}</span>
-                </p>
-                {result.maps_link && (
-                  <a href={result.maps_link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-coral-dark hover:text-coral text-[11px] sm:text-xs font-medium transition-colors">
-                    Xem trên Maps
-                    <ExternalLink size={11} />
-                  </a>
-                )}
-              </div>
-            ) : (
+          {!hasStartedSpin ? (
+            <div className="paper-card rounded-xl border-[3px] border-ink shadow-[4px_4px_0_0_#1A1A1A] w-full max-w-sm p-5 sm:p-6 mb-4 sm:mb-5 min-h-[160px] flex flex-col items-center justify-center gap-4">
               <p className={"font-display italic text-lg sm:text-xl text-ink transition-opacity " + highlightOpacityClass}>
                 {currentPool[highlightIndex] ? currentPool[highlightIndex].name : ""}
               </p>
-            )}
-          </div>
+              <button
+                onClick={() => setShowSpinChoice(true)}
+                className="inline-flex items-center gap-2 bg-coral hover:bg-coral-dark text-paper font-semibold px-6 py-3 rounded-lg border-[3px] border-ink shadow-[4px_4px_0_0_#1A1A1A] transition-colors"
+              >
+                <Shuffle size={18} />
+                Quay ngay
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="paper-card rounded-xl border-[3px] border-ink shadow-[4px_4px_0_0_#1A1A1A] w-full max-w-sm p-4 sm:p-5 mb-4 sm:mb-5 min-h-[130px] flex flex-col items-center justify-center">
+                {result ? (
+                  <div>
+                    <div className="flex items-center justify-center gap-1.5 text-coral-dark mb-1.5">
+                      <PartyPopper size={14} />
+                      <span className="text-[10px] font-mono uppercase tracking-wide">
+                        Đi địa điểm này nè!
+                      </span>
+                    </div>
+                    <p className="font-display italic text-base sm:text-lg text-ink mb-1.5">
+                      {result.name}
+                    </p>
+                    <p className="text-[11px] sm:text-xs text-charcoal/60 flex items-center justify-center gap-1 mb-2">
+                      <MapPin size={11} className="shrink-0" />
+                      <span className="line-clamp-2">{result.address}</span>
+                    </p>
+                    {result.maps_link && (
+                      <a href={result.maps_link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-coral-dark hover:text-coral text-[11px] sm:text-xs font-medium transition-colors">
+                        Xem trên Maps
+                        <ExternalLink size={11} />
+                      </a>
+                    )}
+                  </div>
+                ) : (
+                  <p className={"font-display italic text-lg sm:text-xl text-ink transition-opacity " + highlightOpacityClass}>
+                    {currentPool[highlightIndex] ? currentPool[highlightIndex].name : ""}
+                  </p>
+                )}
+              </div>
 
-          <button
-            onClick={() => setShowSpinChoice(true)}
-            disabled={spinning}
-            className="inline-flex items-center gap-2 bg-coral hover:bg-coral-dark text-paper font-semibold px-6 py-3 rounded-lg border-[3px] border-ink shadow-[4px_4px_0_0_#1A1A1A] transition-colors disabled:opacity-60"
-          >
-            <Shuffle size={18} className={spinning ? "animate-spin" : ""} />
-            {spinning ? "Đang quay..." : result ? "Quay lại" : "Quay ngay"}
-          </button>
+              <button
+                onClick={() => setShowSpinChoice(true)}
+                disabled={spinning}
+                className="inline-flex items-center gap-2 bg-coral hover:bg-coral-dark text-paper font-semibold px-6 py-3 rounded-lg border-[3px] border-ink shadow-[4px_4px_0_0_#1A1A1A] transition-colors disabled:opacity-60"
+              >
+                <Shuffle size={18} className={spinning ? "animate-spin" : ""} />
+                {spinning ? "Đang quay..." : "Quay lại"}
+              </button>
+            </>
+          )}
 
           <p className="text-[10px] sm:text-xs text-charcoal/40 font-mono mt-2 mb-4">
             {spinMode === "want_to_go"
@@ -313,7 +332,7 @@ export default function RandomPage() {
               active={activeCategory}
               onChange={setActiveCategory}
               extraCategories={extraCategories}
-              places={[...places, ...visitedPlaces]}
+              places={places}
             />
           </div>
 
