@@ -321,11 +321,7 @@ export default function RandomPage() {
             </>
           )}
 
-          <p className="text-[10px] sm:text-xs text-charcoal/40 font-mono mt-2 mb-4">
-            {spinMode === "want_to_go"
-              ? `${places.length} địa điểm trong danh sách "Muốn đi"`
-              : `${visitedPlaces.length} địa điểm trong danh sách "Đã đi"`}
-          </p>
+
 
           <div className="w-full mb-4 sm:mb-6">
             <CategoryFilter
