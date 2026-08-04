@@ -6,6 +6,7 @@ import { Place } from "@/lib/types";
 import { distanceKm } from "@/lib/geo";
 import AddEditPlaceModal, { PlaceFormValues } from "@/components/AddEditPlaceModal";
 import PlaceListItem from "@/components/PlaceListItem";
+import CategoryFilter, { CategoryFilterValue, matchesCategory } from "@/components/CategoryFilter";
 import { Shuffle, MapPin, ExternalLink, PartyPopper, Plus, Navigation, X, Check } from "lucide-react";
 
 const NEARBY_KM = 5;
@@ -29,6 +30,7 @@ export default function RandomPage() {
   const [visitedPlaces, setVisitedPlaces] = useState<Place[]>([]);
   const [spinMode, setSpinMode] = useState<"want_to_go" | "visited">("want_to_go");
   const [showSpinChoice, setShowSpinChoice] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<CategoryFilterValue>("all");
 
   useEffect(() => {
     fetchPlaces();
@@ -210,6 +212,7 @@ export default function RandomPage() {
   const groupedByDistrict = useMemo(() => {
     const groups: Record<string, PlaceWithDistance[]> = {};
     for (const p of placesWithDistance) {
+      if (!matchesCategory(p.category, activeCategory)) continue;
       const key = p.district && p.district.trim() ? p.district : "Chưa phân loại";
       if (!groups[key]) groups[key] = [];
       groups[key].push(p);
@@ -223,7 +226,7 @@ export default function RandomPage() {
       });
     }
     return groups;
-  }, [placesWithDistance]);
+  }, [placesWithDistance, activeCategory]);
 
   const districtNames = Object.keys(groupedByDistrict).sort((a, b) => {
     if (a === "Chưa phân loại") return 1;
@@ -290,6 +293,10 @@ export default function RandomPage() {
               ? `${places.length} địa điểm trong danh sách "Muốn đi"`
               : `${visitedPlaces.length} địa điểm trong danh sách "Đã đi"`}
           </p>
+
+          <div className="w-full mb-4 sm:mb-6">
+            <CategoryFilter active={activeCategory} onChange={setActiveCategory} />
+          </div>
 
           <div className="w-full text-left">
             <div className="flex flex-col gap-6">

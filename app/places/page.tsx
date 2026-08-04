@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { Place } from "@/lib/types";
 import PlaceListItem from "@/components/PlaceListItem";
 import AddEditPlaceModal, { PlaceFormValues } from "@/components/AddEditPlaceModal";
+import CategoryFilter, { CategoryFilterValue, matchesCategory } from "@/components/CategoryFilter";
 import { Plus, Search } from "lucide-react";
 
 export default function PlacesPage() {
@@ -14,6 +15,7 @@ export default function PlacesPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingPlace, setEditingPlace] = useState<Place | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeCategory, setActiveCategory] = useState<CategoryFilterValue>("all");
 
   useEffect(() => {
     fetchPlaces();
@@ -104,14 +106,15 @@ export default function PlacesPage() {
 
   const filteredPlaces = useMemo(() => {
     const q = searchTerm.trim().toLowerCase();
-    if (!q) return places;
     return places.filter((p) => {
-      const name = p.name?.toLowerCase() || "";
-      const address = p.address?.toLowerCase() || "";
-      const district = p.district?.toLowerCase() || "";
-      return name.includes(q) || address.includes(q) || district.includes(q);
+      const matchesQuery =
+        !q ||
+        (p.name?.toLowerCase() || "").includes(q) ||
+        (p.address?.toLowerCase() || "").includes(q) ||
+        (p.district?.toLowerCase() || "").includes(q);
+      return matchesQuery && matchesCategory(p.category, activeCategory);
     });
-  }, [places, searchTerm]);
+  }, [places, searchTerm, activeCategory]);
 
   return (
     <main className="max-w-3xl mx-auto px-4 sm:px-8 pt-4 sm:pt-8">
@@ -127,6 +130,10 @@ export default function PlacesPage() {
           placeholder="Tìm theo tên, địa chỉ, hoặc quận..."
           className="w-full paper-card rounded-lg border-[3px] border-ink shadow-[3px_3px_0_0_#1A1A1A] pl-10 pr-4 py-2.5 text-sm text-charcoal placeholder:text-charcoal/40 focus:outline-none"
         />
+      </div>
+
+      <div className="mb-5 sm:mb-8">
+        <CategoryFilter active={activeCategory} onChange={setActiveCategory} />
       </div>
 
       {error && (
