@@ -16,6 +16,17 @@ function formatDate(dateStr: string): string {
   return `${d}/${m}/${y}`;
 }
 
+const CATEGORY_ICON: Record<string, string> = {
+  "Ăn uống": "🍜",
+  "Cà phê": "☕",
+  "Giải trí": "🎈",
+};
+
+function categoryIcon(category: string | null): string {
+  if (!category) return "";
+  return CATEGORY_ICON[category] || "📍";
+}
+
 export default function PlaceListItem({
   place,
   onEdit,
@@ -96,6 +107,11 @@ export default function PlaceListItem({
       </div>
 
       <div className="flex flex-col items-end gap-1.5 shrink-0">
+        {place.category && (
+          <span className="text-[9px] sm:text-[10px] font-medium text-charcoal/50 bg-charcoal/5 px-1.5 py-0.5 rounded-full whitespace-nowrap">
+            {categoryIcon(place.category)} {place.category}
+          </span>
+        )}
         <div className="flex items-center gap-1">
           {onMarkVisited && (
             <button
