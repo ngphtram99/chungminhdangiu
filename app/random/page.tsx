@@ -161,15 +161,24 @@ export default function RandomPage() {
     fetchVisitedPlaces();
   }
 
-  const currentPool = spinMode === "want_to_go" ? places : visitedPlaces;
+  const filteredWantToGo = useMemo(
+    () => places.filter((p) => matchesCategory(p.category, activeCategory)),
+    [places, activeCategory]
+  );
+  const filteredVisited = useMemo(
+    () => visitedPlaces.filter((p) => matchesCategory(p.category, activeCategory)),
+    [visitedPlaces, activeCategory]
+  );
+
+  const currentPool = spinMode === "want_to_go" ? filteredWantToGo : filteredVisited;
 
   function startSpin(mode: "want_to_go" | "visited") {
-    const pool = mode === "want_to_go" ? places : visitedPlaces;
+    const pool = mode === "want_to_go" ? filteredWantToGo : filteredVisited;
     if (pool.length === 0) {
       alert(
         mode === "want_to_go"
-          ? "Chưa có địa điểm nào ở mục \u0022Muốn đi\u0022."
-          : "Chưa có địa điểm nào ở mục \u0022Đã đi\u0022."
+          ? "Chưa có địa điểm nào ở mục \u0022Muốn đi\u0022 khớp phân loại đã chọn."
+          : "Chưa có địa điểm nào ở mục \u0022Đã đi\u0022 khớp phân loại đã chọn."
       );
       return;
     }
@@ -379,13 +388,13 @@ export default function RandomPage() {
                 onClick={() => startSpin("want_to_go")}
                 className="w-full bg-coral hover:bg-coral-dark text-paper font-semibold py-2.5 rounded-lg border-2 border-ink shadow-[3px_3px_0_0_#1A1A1A] transition-colors"
               >
-                Chưa đi ({places.length})
+                Chưa đi ({filteredWantToGo.length})
               </button>
               <button
                 onClick={() => startSpin("visited")}
                 className="w-full bg-ink hover:bg-charcoal text-paper font-semibold py-2.5 rounded-lg border-2 border-ink transition-colors"
               >
-                Đã đi ({visitedPlaces.length})
+                Đã đi ({filteredVisited.length})
               </button>
             </div>
           </div>
