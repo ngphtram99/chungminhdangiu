@@ -309,7 +309,12 @@ export default function RandomPage() {
           </p>
 
           <div className="w-full mb-4 sm:mb-6">
-            <CategoryFilter active={activeCategory} onChange={setActiveCategory} extraCategories={extraCategories} />
+            <CategoryFilter
+              active={activeCategory}
+              onChange={setActiveCategory}
+              extraCategories={extraCategories}
+              places={[...places, ...visitedPlaces]}
+            />
           </div>
 
           <div className="w-full text-left">

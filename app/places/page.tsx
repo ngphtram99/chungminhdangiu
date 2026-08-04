@@ -135,7 +135,7 @@ export default function PlacesPage() {
       </div>
 
       <div className="mb-5 sm:mb-8">
-        <CategoryFilter active={activeCategory} onChange={setActiveCategory} extraCategories={extraCategories} />
+        <CategoryFilter active={activeCategory} onChange={setActiveCategory} extraCategories={extraCategories} places={places} />
       </div>
 
       {error && (

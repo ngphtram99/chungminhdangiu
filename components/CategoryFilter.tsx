@@ -32,16 +32,23 @@ export default function CategoryFilter({
   active,
   onChange,
   extraCategories = [],
+  places,
 }: {
   active: CategoryFilterValue;
   onChange: (v: CategoryFilterValue) => void;
   extraCategories?: string[];
+  places: Place[];
 }) {
   const chips: { value: CategoryFilterValue; label: string }[] = [
     { value: "all", label: "Tất cả" },
     ...CATEGORY_PRESETS.map((c) => ({ value: c, label: `${PRESET_ICON[c] || ""} ${c}` })),
     ...extraCategories.map((c) => ({ value: c, label: `📍 ${c}` })),
   ];
+
+  function countFor(value: CategoryFilterValue): number {
+    if (value === "all") return places.length;
+    return places.filter((p) => p.category === value).length;
+  }
 
   return (
     <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
@@ -59,6 +66,9 @@ export default function CategoryFilter({
             }`}
           >
             {chip.label}
+            <span className="ml-1 font-mono text-[10px] sm:text-xs opacity-70">
+              ({countFor(chip.value)})
+            </span>
           </button>
         );
       })}
