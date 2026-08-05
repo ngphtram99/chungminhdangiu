@@ -113,44 +113,72 @@ export default function PlacesPage() {
     fetchPlaces();
   }
 
-  async function geocodeMissingPlaces() {
+  async function tryGeocode(query: string): Promise<{ lat: number; lng: number } | null> {
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=vn&q=${encodeURIComponent(query)}`
+      );
+      const data = await res.json();
+      if (data && data[0]) {
+        const lat = parseFloat(data[0].lat);
+        const lng = parseFloat(data[0].lon);
+        if (!isNaN(lat) && !isNaN(lng)) return { lat, lng };
+      }
+    } catch (err) {
+      console.error("Lỗi khi tra cứu:", query, err);
+    }
+    return null;
+  }
+
+  async function geocodeMissingPlaces(): Promise<string[]> {
     const missing = places.filter((p) => {
       if (p.lat != null && p.lng != null) return false;
       const extracted = extractLatLngFromMapsLink(p.maps_link);
       return !extracted;
     });
 
+    const failedNames: string[] = [];
+
     for (const place of missing) {
-      try {
-        const query = encodeURIComponent(`${place.address}, Việt Nam`.trim());
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=vn&q=${query}`
-        );
-        const data = await res.json();
-        if (data && data[0]) {
-          const lat = parseFloat(data[0].lat);
-          const lng = parseFloat(data[0].lon);
-          if (!isNaN(lat) && !isNaN(lng)) {
-            await supabase.from("places").update({ lat, lng }).eq("id", place.id);
-          }
-        }
-      } catch (err) {
-        console.error("Không tra được vị trí cho:", place.name, err);
-      }
-      // Chờ 1.1 giây giữa mỗi lượt tra cứu để tôn trọng giới hạn của dịch vụ miễn phí
+      // Thử 1: địa chỉ đầy đủ
+      let coords = await tryGeocode(`${place.address}, Việt Nam`);
       await new Promise((resolve) => setTimeout(resolve, 1100));
+
+      // Thử 2: bỏ phần trong ngoặc đơn (vd: "(Quận 3 cũ)") nếu lần 1 thất bại
+      if (!coords) {
+        const simplified = place.address.replace(/\([^)]*\)/g, "").trim();
+        if (simplified && simplified !== place.address) {
+          coords = await tryGeocode(`${simplified}, Việt Nam`);
+          await new Promise((resolve) => setTimeout(resolve, 1100));
+        }
+      }
+
+      if (coords) {
+        await supabase.from("places").update(coords).eq("id", place.id);
+      } else {
+        failedNames.push(place.name);
+      }
     }
 
     if (missing.length > 0) {
       await fetchPlaces();
     }
+
+    return failedNames;
   }
 
   async function handleOpenMap() {
     setGeocoding(true);
-    await geocodeMissingPlaces();
+    const failed = await geocodeMissingPlaces();
     setGeocoding(false);
     setMapOpen(true);
+    if (failed.length > 0) {
+      alert(
+        "Không tự tìm được vị trí cho:\n\n" +
+          failed.map((n) => "• " + n).join("\n") +
+          "\n\nBạn mở sửa từng địa điểm đó và bấm \u0022Lấy vị trí hiện tại\u0022 khi có dịp ghé lại nhé."
+      );
+    }
   }
 
   const filteredPlaces = useMemo(() => {
