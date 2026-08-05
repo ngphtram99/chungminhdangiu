@@ -1,12 +1,15 @@
 "use client";
 
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { useEffect, useState } from "react";
+import { MapContainer, TileLayer, Marker, Popup, CircleMarker } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Place } from "@/lib/types";
 import { X } from "lucide-react";
 
 export type MarkerPlace = Place & { __lat: number; __lng: number };
+
+const MAPTILER_KEY = process.env.NEXT_PUBLIC_MAPTILER_KEY;
 
 function createPhotoIcon(photoUrl?: string | null) {
   const inner = photoUrl
@@ -34,6 +37,22 @@ export default function PlacesMapView({
   places: MarkerPlace[];
   onClose: () => void;
 }) {
+  const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        },
+        () => {
+          setUserLoc(null);
+        },
+        { enableHighAccuracy: true, timeout: 8000 }
+      );
+    }
+  }, []);
+
   if (places.length === 0) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 px-6">
@@ -60,6 +79,14 @@ export default function PlacesMapView({
     places.reduce((s, p) => s + p.__lng, 0) / places.length,
   ];
 
+  const tileUrl = MAPTILER_KEY
+    ? `https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`
+    : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
+
+  const attribution = MAPTILER_KEY
+    ? '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'
+    : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>';
+
   return (
     <div className="fixed inset-0 z-50 bg-paper flex flex-col">
       <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-b-[3px] border-ink paper-card shrink-0">
@@ -81,11 +108,23 @@ export default function PlacesMapView({
           scrollWheelZoom={true}
           style={{ width: "100%", height: "100%" }}
         >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
-            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-            subdomains={["a", "b", "c", "d"]}
-          />
+          <TileLayer attribution={attribution} url={tileUrl} />
+
+          {userLoc && (
+            <CircleMarker
+              center={[userLoc.lat, userLoc.lng]}
+              radius={8}
+              pathOptions={{
+                color: "#ffffff",
+                weight: 3,
+                fillColor: "#3b82f6",
+                fillOpacity: 1,
+              }}
+            >
+              <Popup>Vị trí của bạn</Popup>
+            </CircleMarker>
+          )}
+
           {places.map((p) => (
             <Marker
               key={p.id}
