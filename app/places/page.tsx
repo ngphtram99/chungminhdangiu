@@ -9,7 +9,7 @@ import PlaceListItem from "@/components/PlaceListItem";
 import AddEditPlaceModal, { PlaceFormValues } from "@/components/AddEditPlaceModal";
 import CategoryFilter, { CategoryFilterValue, matchesCategory, getExtraCategories } from "@/components/CategoryFilter";
 import type { MarkerPlace } from "@/components/PlacesMapView";
-import { Plus, Search, Map as MapIcon } from "lucide-react";
+import { Plus, Search, Map as MapIcon, Loader2 } from "lucide-react";
 
 const PlacesMapView = dynamic(() => import("@/components/PlacesMapView"), {
   ssr: false,
@@ -24,6 +24,7 @@ export default function PlacesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeCategory, setActiveCategory] = useState<CategoryFilterValue>("all");
   const [mapOpen, setMapOpen] = useState(false);
+  const [geocoding, setGeocoding] = useState(false);
 
   useEffect(() => {
     fetchPlaces();
@@ -112,6 +113,46 @@ export default function PlacesPage() {
     fetchPlaces();
   }
 
+  async function geocodeMissingPlaces() {
+    const missing = places.filter((p) => {
+      if (p.lat != null && p.lng != null) return false;
+      const extracted = extractLatLngFromMapsLink(p.maps_link);
+      return !extracted;
+    });
+
+    for (const place of missing) {
+      try {
+        const query = encodeURIComponent(`${place.address}, Việt Nam`.trim());
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=vn&q=${query}`
+        );
+        const data = await res.json();
+        if (data && data[0]) {
+          const lat = parseFloat(data[0].lat);
+          const lng = parseFloat(data[0].lon);
+          if (!isNaN(lat) && !isNaN(lng)) {
+            await supabase.from("places").update({ lat, lng }).eq("id", place.id);
+          }
+        }
+      } catch (err) {
+        console.error("Không tra được vị trí cho:", place.name, err);
+      }
+      // Chờ 1.1 giây giữa mỗi lượt tra cứu để tôn trọng giới hạn của dịch vụ miễn phí
+      await new Promise((resolve) => setTimeout(resolve, 1100));
+    }
+
+    if (missing.length > 0) {
+      await fetchPlaces();
+    }
+  }
+
+  async function handleOpenMap() {
+    setGeocoding(true);
+    await geocodeMissingPlaces();
+    setGeocoding(false);
+    setMapOpen(true);
+  }
+
   const filteredPlaces = useMemo(() => {
     const q = searchTerm.trim().toLowerCase();
     return places.filter((p) => {
@@ -198,11 +239,16 @@ export default function PlacesPage() {
 
       <div className="fixed right-4 sm:right-8 bottom-[calc(5.5rem+env(safe-area-inset-bottom)+0.75rem)] sm:bottom-[7.25rem] z-40 flex flex-col items-center gap-3">
         <button
-          onClick={() => setMapOpen(true)}
+          onClick={handleOpenMap}
+          disabled={geocoding}
           aria-label="Xem bản đồ"
-          className="w-14 h-14 rounded-lg border-[3px] border-ink bg-ink hover:bg-charcoal text-paper shadow-[4px_4px_0_0_#1A1A1A] flex items-center justify-center transition-colors"
+          className="w-14 h-14 rounded-lg border-[3px] border-ink bg-ink hover:bg-charcoal text-paper shadow-[4px_4px_0_0_#1A1A1A] flex items-center justify-center transition-colors disabled:opacity-60"
         >
-          <MapIcon size={22} />
+          {geocoding ? (
+            <Loader2 size={22} className="animate-spin" />
+          ) : (
+            <MapIcon size={22} />
+          )}
         </button>
         <button
           onClick={() => {
@@ -215,6 +261,17 @@ export default function PlacesPage() {
           <Plus size={24} />
         </button>
       </div>
+
+      {geocoding && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-ink/50 px-6">
+          <div className="paper-card rounded-xl border-[3px] border-ink shadow-[5px_5px_0_0_#1A1A1A] p-6 max-w-xs w-full text-center flex flex-col items-center gap-3">
+            <Loader2 size={28} className="animate-spin text-coral-dark" />
+            <p className="text-sm text-charcoal/70">
+              Đang tìm vị trí cho các địa điểm mới, đợi mình xíu nha...
+            </p>
+          </div>
+        </div>
+      )}
 
       {modalOpen && (
         <AddEditPlaceModal

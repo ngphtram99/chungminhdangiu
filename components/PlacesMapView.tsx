@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -9,6 +8,25 @@ import { X } from "lucide-react";
 
 export type MarkerPlace = Place & { __lat: number; __lng: number };
 
+function createPhotoIcon(photoUrl?: string | null) {
+  const inner = photoUrl
+    ? `<div style="width:44px;height:44px;border-radius:9999px;overflow:hidden;border:3px solid #1A1A1A;box-shadow:2px 2px 0 0 #1A1A1A;background:#fff;">
+         <img src="${photoUrl}" style="width:100%;height:100%;object-fit:cover;display:block;" />
+       </div>`
+    : `<div style="width:44px;height:44px;border-radius:9999px;border:3px solid #1A1A1A;box-shadow:2px 2px 0 0 #1A1A1A;background:#F0DEEA;display:flex;align-items:center;justify-content:center;font-size:20px;">📍</div>`;
+
+  return L.divIcon({
+    html: `<div style="position:relative;display:flex;flex-direction:column;align-items:center;">
+             ${inner}
+             <div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid #1A1A1A;margin-top:-2px;"></div>
+           </div>`,
+    className: "",
+    iconSize: [44, 54],
+    iconAnchor: [22, 54],
+    popupAnchor: [0, -54],
+  });
+}
+
 export default function PlacesMapView({
   places,
   onClose,
@@ -16,16 +34,6 @@ export default function PlacesMapView({
   places: MarkerPlace[];
   onClose: () => void;
 }) {
-  useEffect(() => {
-    // Sửa lỗi icon mặc định của Leaflet không hiện đúng khi build với Webpack
-    delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
-    L.Icon.Default.mergeOptions({
-      iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-      iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-      shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-    });
-  }, []);
-
   if (places.length === 0) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 px-6">
@@ -74,11 +82,16 @@ export default function PlacesMapView({
           style={{ width: "100%", height: "100%" }}
         >
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+            subdomains={["a", "b", "c", "d"]}
           />
           {places.map((p) => (
-            <Marker key={p.id} position={[p.__lat, p.__lng]}>
+            <Marker
+              key={p.id}
+              position={[p.__lat, p.__lng]}
+              icon={createPhotoIcon(p.photo_links?.[0])}
+            >
               <Popup>
                 <div style={{ textAlign: "center", minWidth: 140 }}>
                   {p.photo_links && p.photo_links[0] && (
