@@ -59,7 +59,12 @@ export default function PlacesPage() {
       );
       console.error(error);
     } else {
-      setPlaces(data as Place[]);
+      const sorted = [...(data as Place[])].sort((a, b) => {
+        const dateA = a.visited_date || a.created_at;
+        const dateB = b.visited_date || b.created_at;
+        return new Date(dateB).getTime() - new Date(dateA).getTime();
+      });
+      setPlaces(sorted);
       setError(null);
     }
     setLoading(false);

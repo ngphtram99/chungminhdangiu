@@ -80,7 +80,7 @@ export default function PlacesMapView({
   ];
 
   const tileUrl = MAPTILER_KEY
-    ? `https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`
+    ? `https://api.maptiler.com/maps/streets-v4/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`
     : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
 
   const attribution = MAPTILER_KEY
