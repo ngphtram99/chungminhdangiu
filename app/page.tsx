@@ -1,7 +1,7 @@
 "use client";
 
 import CoupleHeader from "@/components/CoupleHeader";
-import PhotoGallery from "@/components/PhotoGallery";
+import LoveDuration from "@/components/LoveDuration";
 
 export default function Home() {
   return (
@@ -12,7 +12,7 @@ export default function Home() {
 
       <CoupleHeader />
 
-      <PhotoGallery />
+      <LoveDuration />
     </main>
   );
 }
