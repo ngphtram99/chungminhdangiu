@@ -1,13 +1,31 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, CircleMarker } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, CircleMarker, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Place } from "@/lib/types";
 import { X } from "lucide-react";
 
 export type MarkerPlace = Place & { __lat: number; __lng: number };
+
+function FitBounds({ places }: { places: MarkerPlace[] }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (places.length === 0) return;
+    if (places.length === 1) {
+      map.setView([places[0].__lat, places[0].__lng], 15);
+      return;
+    }
+    const bounds = L.latLngBounds(
+      places.map((p) => [p.__lat, p.__lng] as [number, number])
+    );
+    map.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 });
+  }, [places, map]);
+
+  return null;
+}
 
 const MAPTILER_KEY = process.env.NEXT_PUBLIC_MAPTILER_KEY;
 
@@ -74,11 +92,6 @@ export default function PlacesMapView({
     );
   }
 
-  const center: [number, number] = [
-    places.reduce((s, p) => s + p.__lat, 0) / places.length,
-    places.reduce((s, p) => s + p.__lng, 0) / places.length,
-  ];
-
   const tileUrl = MAPTILER_KEY
     ? `https://api.maptiler.com/maps/streets-v4/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`
     : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
@@ -103,12 +116,13 @@ export default function PlacesMapView({
       </div>
       <div className="flex-1 min-h-0">
         <MapContainer
-          center={center}
+          center={[places[0].__lat, places[0].__lng]}
           zoom={12}
           scrollWheelZoom={true}
           style={{ width: "100%", height: "100%" }}
         >
           <TileLayer attribution={attribution} url={tileUrl} />
+          <FitBounds places={places} />
 
           {userLoc && (
             <CircleMarker
