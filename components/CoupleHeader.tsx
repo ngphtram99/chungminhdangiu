@@ -10,7 +10,7 @@ function daysTogether(anniversary: string): number {
   const start = new Date(anniversary + "T00:00:00");
   const today = new Date();
   const diff = today.setHours(0, 0, 0, 0) - start.setHours(0, 0, 0, 0);
-  return Math.floor(diff / (1000 * 60 * 60 * 24)) + 1;
+  return Math.floor(diff / (1000 * 60 * 60 * 24));
 }
 
 export default function CoupleHeader() {
