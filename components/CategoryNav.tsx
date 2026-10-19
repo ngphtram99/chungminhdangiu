@@ -15,7 +15,7 @@ const CATEGORIES = [
   { label: "Lịch", href: "/calendar", icon: CalendarDays, ready: true },
   { label: "Địa điểm", href: "/places", icon: MapPinned, ready: true },
   { label: "Random", href: "/random", icon: Shuffle, ready: true },
-  { label: "Cài đặt", href: "/settings", icon: Settings, ready: false },
+  { label: "Cài đặt", href: "/settings", icon: Settings, ready: true },
 ];
 
 export default function CategoryNav() {

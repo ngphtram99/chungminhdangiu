@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  darkMode: "class",
   content: [
     "./app/**/*.{ts,tsx}",
     "./components/**/*.{ts,tsx}",
@@ -11,32 +12,32 @@ const config: Config = {
         // "ink" now doubles as the noir accent (his color) — kept the
         // token name so components didn't need renaming everywhere.
         ink: {
-          DEFAULT: "#1A1A1A",
-          light: "#2E2E2E",
-          dark: "#0A0A0A",
+          DEFAULT: "rgb(var(--color-ink) / <alpha-value>)",
+          light: "rgb(var(--color-ink-light) / <alpha-value>)",
+          dark: "rgb(var(--color-ink-dark) / <alpha-value>)",
         },
         paper: {
-          DEFAULT: "#FFFBF9",
-          dim: "#F6EEF3",
+          DEFAULT: "rgb(var(--color-paper) / <alpha-value>)",
+          dim: "rgb(var(--color-paper-dim) / <alpha-value>)",
         },
         // her color — soft lilac-pink, used as the main warm accent
         mustard: {
-          DEFAULT: "#C98FB0",
-          dark: "#A8698F",
+          DEFAULT: "rgb(var(--color-mustard) / <alpha-value>)",
+          dark: "rgb(var(--color-mustard-dark) / <alpha-value>)",
         },
         // primary CTA accent — deeper rose
         coral: {
-          DEFAULT: "#D6779A",
-          dark: "#B85A7E",
+          DEFAULT: "rgb(var(--color-coral) / <alpha-value>)",
+          dark: "rgb(var(--color-coral-dark) / <alpha-value>)",
         },
         // "visited" status accent — muted plum, keeps the pink/lilac/black family
         sage: {
-          DEFAULT: "#8C7AA6",
-          dark: "#6B5C82",
+          DEFAULT: "rgb(var(--color-sage) / <alpha-value>)",
+          dark: "rgb(var(--color-sage-dark) / <alpha-value>)",
         },
-        blossom: "#F7E3ED",
-        lilac: "#E9DFF5",
-        charcoal: "#2B2530",
+        blossom: "rgb(var(--color-blossom) / <alpha-value>)",
+        lilac: "rgb(var(--color-lilac) / <alpha-value>)",
+        charcoal: "rgb(var(--color-charcoal) / <alpha-value>)",
       },
       fontFamily: {
         display: ["var(--font-fraunces)", "Georgia", "serif"],

@@ -2,28 +2,77 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-ink: 26 26 26;
+  --color-ink-light: 46 46 46;
+  --color-ink-dark: 10 10 10;
+  --color-paper: 255 251 249;
+  --color-paper-dim: 246 238 243;
+  --color-charcoal: 43 37 48;
+  --color-mustard: 201 143 176;
+  --color-mustard-dark: 168 105 143;
+  --color-coral: 214 119 154;
+  --color-coral-dark: 184 90 126;
+  --color-sage: 140 122 166;
+  --color-sage-dark: 107 92 130;
+  --color-blossom: 247 227 237;
+  --color-lilac: 233 223 245;
+
+  --page-bg: #F0DEEA;
+  --page-grad-1: #F7E3ED;
+  --page-grad-2: #EFE1F2;
+  --page-grad-3: #E4D6EE;
+  --page-dot: rgba(26, 26, 26, 0.05);
+  --card-dot: rgba(26, 26, 26, 0.04);
+}
+
+.dark {
+  --color-ink: 245 240 250;
+  --color-ink-light: 225 220 235;
+  --color-ink-dark: 255 255 255;
+  --color-paper: 30 24 36;
+  --color-paper-dim: 38 30 46;
+  --color-charcoal: 205 196 216;
+  --color-mustard: 214 163 193;
+  --color-mustard-dark: 235 190 212;
+  --color-coral: 230 150 180;
+  --color-coral-dark: 245 175 200;
+  --color-sage: 170 155 200;
+  --color-sage-dark: 195 180 220;
+  --color-blossom: 60 40 55;
+  --color-lilac: 55 45 70;
+
+  --page-bg: #120D18;
+  --page-grad-1: #1A1420;
+  --page-grad-2: #15101C;
+  --page-grad-3: #0F0A14;
+  --page-dot: rgba(255, 255, 255, 0.05);
+  --card-dot: rgba(255, 255, 255, 0.05);
+}
+
 html {
   scroll-behavior: smooth;
 }
 
 body {
-  background-color: #F0DEEA;
+  background-color: var(--page-bg);
   background-image:
-    radial-gradient(circle at 1px 1px, rgba(26,26,26,0.05) 1px, transparent 0),
-    linear-gradient(160deg, #F7E3ED 0%, #EFE1F2 45%, #E4D6EE 100%);
+    radial-gradient(circle at 1px 1px, var(--page-dot) 1px, transparent 0),
+    linear-gradient(160deg, var(--page-grad-1) 0%, var(--page-grad-2) 45%, var(--page-grad-3) 100%);
   background-size: 20px 20px, cover;
   background-attachment: fixed;
-  color: #1A1A1A;
+  color: rgb(var(--color-ink));
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 ::selection {
-  background-color: #1A1A1A;
-  color: #F7E3ED;
+  background-color: rgb(var(--color-ink));
+  color: rgb(var(--color-blossom));
 }
 
 .paper-card {
-  background-color: #FFFBF9;
-  background-image: radial-gradient(circle at 1px 1px, rgba(26,26,26,0.04) 1px, transparent 0);
+  background-color: rgb(var(--color-paper));
+  background-image: radial-gradient(circle at 1px 1px, var(--card-dot) 1px, transparent 0);
   background-size: 16px 16px;
 }
 

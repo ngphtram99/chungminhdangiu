@@ -44,13 +44,27 @@ export const viewport: Viewport = {
   themeColor: "#F0DEEA",
 };
 
+const themeInitScript = `
+(function () {
+  try {
+    var theme = localStorage.getItem("theme");
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    }
+  } catch (e) {}
+})();
+`;
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="vi">
+    <html lang="vi" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body
         className={`${fraunces.variable} ${inter.variable} ${spaceMono.variable} ${vt323.variable} font-body min-h-screen`}
       >
