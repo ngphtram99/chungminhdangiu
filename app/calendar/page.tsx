@@ -10,6 +10,7 @@ import {
   Trash2,
   ZoomIn,
   ZoomOut,
+  Clock,
 } from "lucide-react";
 
 const MONTH_NAMES = [
@@ -24,7 +25,7 @@ function toDateKey(y: number, m: number, d: number) {
 
 function getMonthGrid(year: number, month: number) {
   const firstDay = new Date(year, month, 1);
-  const startOffset = (firstDay.getDay() + 6) % 7; // T2 = 0
+  const startOffset = (firstDay.getDay() + 6) % 7;
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const cells: (number | null)[] = [];
   for (let i = 0; i < startOffset; i++) cells.push(null);
@@ -45,16 +46,21 @@ export default function CalendarPage() {
   const [draft, setDraft] = useState("");
   const [saving, setSaving] = useState(false);
   const [photosByDate, setPhotosByDate] = useState<Record<string, { url: string; name: string }[]>>({});
+  const [recentNotes, setRecentNotes] = useState<CalendarNote[]>([]);
 
   useEffect(() => {
     fetchNotes();
     fetchVisitedPhotos();
+    fetchRecentNotes();
     const channel = supabase
       .channel("calendar_notes_changes")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "calendar_notes" },
-        () => fetchNotes()
+        () => {
+          fetchNotes();
+          fetchRecentNotes();
+        }
       )
       .subscribe();
     const placesChannel = supabase
@@ -88,6 +94,15 @@ export default function CalendarPage() {
     setLoading(false);
   }
 
+  async function fetchRecentNotes() {
+    const { data, error } = await supabase
+      .from("calendar_notes")
+      .select("*")
+      .order("updated_at", { ascending: false })
+      .limit(5);
+    if (!error && data) setRecentNotes(data as CalendarNote[]);
+  }
+
   async function fetchVisitedPhotos() {
     const { data, error } = await supabase
       .from("places")
@@ -106,6 +121,16 @@ export default function CalendarPage() {
       });
       setPhotosByDate(map);
     }
+  }
+
+  function goToNote(note: CalendarNote) {
+    const parts = note.note_date.split("-").map(Number);
+    const y = parts[0];
+    const m = parts[1];
+    setYear(y);
+    setActiveMonth(m - 1);
+    setView("month");
+    openDay(note.note_date);
   }
 
   function openDay(dateKey: string) {
@@ -215,6 +240,33 @@ export default function CalendarPage() {
           <ChevronRight size={18} />
         </button>
       </div>
+
+      {recentNotes.length > 0 && (
+        <div className="paper-card rounded-xl border-[3px] border-ink shadow-[4px_4px_0_0_#1A1A1A] p-4 sm:p-5 mb-5 sm:mb-8 max-w-xl mx-auto">
+          <div className="flex items-center gap-1.5 mb-3">
+            <Clock size={14} className="text-coral-dark" />
+            <p className="text-xs sm:text-sm font-semibold text-ink">
+              Ghi chú gần đây
+            </p>
+          </div>
+          <div className="flex flex-col gap-2">
+            {recentNotes.map((n) => (
+              <button
+                key={n.id}
+                onClick={() => goToNote(n)}
+                className="flex flex-col items-start gap-0.5 text-left px-2.5 py-2 rounded-lg hover:bg-coral/10 transition-colors"
+              >
+                <span className="text-[9px] sm:text-[10px] font-mono text-charcoal/50">
+                  {n.note_date.split("-").reverse().join("/")}
+                </span>
+                <span className="text-[11px] sm:text-sm text-charcoal line-clamp-1 w-full">
+                  {n.content}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {loading ? (
         <p className="text-charcoal/60 font-mono text-sm text-center">Đang tải...</p>
