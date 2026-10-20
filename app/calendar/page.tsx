@@ -37,7 +37,7 @@ type ViewMode = "year" | "month";
 export default function CalendarPage() {
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
-  const [view, setView] = useState<ViewMode>("year");
+  const [view, setView] = useState<ViewMode>("month");
   const [activeMonth, setActiveMonth] = useState(today.getMonth());
   const [notes, setNotes] = useState<Record<string, CalendarNote>>({});
   const [loading, setLoading] = useState(true);
