@@ -23,6 +23,7 @@ export function getExtraCategories(places: Place[]): string[] {
 }
 
 const PRESET_ICON: Record<string, string> = {
+  "Nhà thờ": "⛪",
   "Ăn uống": "🍜",
   "Cà phê": "☕",
   "Giải trí": "🎈",

@@ -17,6 +17,7 @@ function formatDate(dateStr: string): string {
 }
 
 const CATEGORY_ICON: Record<string, string> = {
+  "Nhà thờ": "⛪",
   "Ăn uống": "🍜",
   "Cà phê": "☕",
   "Giải trí": "🎈",
