@@ -53,7 +53,9 @@ export default function CategoryFilter({
 
   return (
     <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
-      {chips.map((chip) => {
+      {chips
+        .filter((chip) => chip.value === "all" || chip.value === active || countFor(chip.value) > 0)
+        .map((chip) => {
         const isActive = active === chip.value;
         return (
           <button
