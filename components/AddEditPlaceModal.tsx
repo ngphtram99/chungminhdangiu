@@ -303,6 +303,7 @@ export default function AddEditPlaceModal({
               <option value="Ăn uống">🍜 Ăn uống</option>
               <option value="Cà phê">☕ Cà phê</option>
               <option value="Giải trí">🎈 Giải trí</option>
+              <option value="Nhà thờ">⛪ Nhà thờ</option>
               <option value="__custom__">Khác (tự nhập)</option>
             </select>
             {isCustomCategory && (
