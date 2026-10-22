@@ -53,6 +53,7 @@ export default function CalendarPage() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [lightboxPhoto, setLightboxPhoto] = useState<{ url: string; name: string } | null>(null);
+  const [selectedPhotos, setSelectedPhotos] = useState<number[]>([]);
 
   useEffect(() => {
     fetchNotes();
@@ -143,6 +144,7 @@ export default function CalendarPage() {
     setSelectedDate(dateKey);
     setDraft(notes[dateKey]?.content || "");
     setDraftPhotos(notes[dateKey]?.photo_links || []);
+    setSelectedPhotos([]);
     setUploadError(null);
   }
 
@@ -166,6 +168,17 @@ export default function CalendarPage() {
     } finally {
       setUploadingPhoto(false);
     }
+  }
+
+  function toggleSelectPhoto(idx: number) {
+    setSelectedPhotos((prev) =>
+      prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]
+    );
+  }
+
+  function removeSelectedPhotos() {
+    setDraftPhotos((prev) => prev.filter((_, i) => !selectedPhotos.includes(i)));
+    setSelectedPhotos([]);
   }
 
   function removeDraftPhoto(idx: number) {
@@ -481,29 +494,47 @@ export default function CalendarPage() {
               )}
               {draftPhotos.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-2">
-                  {draftPhotos.map((link, i) => (
-                    <div key={i} className="relative w-16 h-16 rounded-lg overflow-hidden group">
-                      <button
-                        type="button"
-                        onClick={() => setLightboxPhoto({ url: link, name: "Ảnh ghi chú" })}
-                        className="w-full h-full block"
+                  {draftPhotos.map((link, i) => {
+                    const isSel = selectedPhotos.includes(i);
+                    return (
+                      <div
+                        key={i}
+                        className={`relative w-16 h-16 rounded-lg overflow-hidden border-2 transition-colors ${
+                          isSel ? "border-coral" : "border-transparent"
+                        }`}
                       >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={link} alt="" className="w-full h-full object-cover" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => removeDraftPhoto(i)}
-                        aria-label="Xoá ảnh"
-                        className="absolute inset-0 bg-ink/0 group-hover:bg-ink/50 flex items-center justify-center transition-colors pointer-events-none group-hover:pointer-events-auto"
-                      >
-                        <Trash2
-                          size={16}
-                          className="text-paper opacity-0 group-hover:opacity-100 transition-opacity"
-                        />
-                      </button>
-                    </div>
-                  ))}
+                        <button
+                          type="button"
+                          onClick={() => setLightboxPhoto({ url: link, name: "Ảnh ghi chú" })}
+                          className="w-full h-full block"
+                          aria-label="Phóng to ảnh"
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={link} alt="" className="w-full h-full object-cover" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => toggleSelectPhoto(i)}
+                          aria-label={isSel ? "Bỏ chọn ảnh" : "Chọn ảnh"}
+                          className={`absolute top-1 right-1 w-5 h-5 rounded-full border-2 border-paper flex items-center justify-center text-[10px] leading-none text-paper ${
+                            isSel ? "bg-coral" : "bg-ink/50"
+                          }`}
+                        >
+                          {isSel ? "✓" : ""}
+                        </button>
+                      </div>
+                    );
+                  })}
+                  {selectedPhotos.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={removeSelectedPhotos}
+                      className="w-full text-left inline-flex items-center gap-1.5 text-charcoal/70 hover:text-ink text-xs font-medium mt-1"
+                    >
+                      <X size={13} />
+                      Bỏ {selectedPhotos.length} ảnh đã chọn khỏi ghi chú
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -547,7 +578,7 @@ export default function CalendarPage() {
                   className="inline-flex items-center gap-1.5 text-coral-dark hover:text-coral text-sm font-medium transition-colors disabled:opacity-50"
                 >
                   <Trash2 size={14} />
-                  Xoá
+                  Xoá ghi chú
                 </button>
               ) : (
                 <span />
