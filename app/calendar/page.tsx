@@ -11,6 +11,7 @@ import {
   ZoomIn,
   ZoomOut,
   Clock,
+  Upload,
 } from "lucide-react";
 
 const MONTH_NAMES = [
@@ -47,6 +48,9 @@ export default function CalendarPage() {
   const [saving, setSaving] = useState(false);
   const [photosByDate, setPhotosByDate] = useState<Record<string, { url: string; name: string }[]>>({});
   const [recentNotes, setRecentNotes] = useState<CalendarNote[]>([]);
+  const [draftPhotos, setDraftPhotos] = useState<string[]>([]);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchNotes();
@@ -136,6 +140,34 @@ export default function CalendarPage() {
   function openDay(dateKey: string) {
     setSelectedDate(dateKey);
     setDraft(notes[dateKey]?.content || "");
+    setDraftPhotos(notes[dateKey]?.photo_links || []);
+    setUploadError(null);
+  }
+
+  async function handleUploadNotePhotos(files: FileList) {
+    setUploadingPhoto(true);
+    setUploadError(null);
+    try {
+      const uploaded: string[] = [];
+      for (const file of Array.from(files)) {
+        const ext = file.name.split(".").pop();
+        const path = `note-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const { error } = await supabase.storage.from("place-photos").upload(path, file);
+        if (error) throw error;
+        const { data } = supabase.storage.from("place-photos").getPublicUrl(path);
+        uploaded.push(data.publicUrl);
+      }
+      setDraftPhotos((prev) => [...prev, ...uploaded]);
+    } catch (err) {
+      setUploadError("Upload ảnh thất bại, thử lại nhé.");
+      console.error(err);
+    } finally {
+      setUploadingPhoto(false);
+    }
+  }
+
+  function removeDraftPhoto(idx: number) {
+    setDraftPhotos((prev) => prev.filter((_, i) => i !== idx));
   }
 
   function zoomIntoMonth(m: number) {
@@ -148,19 +180,20 @@ export default function CalendarPage() {
     const text = draft.trim();
     setSaving(true);
 
-    if (!text) {
+    if (!text && draftPhotos.length === 0) {
       if (notes[selectedDate]) {
         await supabase.from("calendar_notes").delete().eq("note_date", selectedDate);
       }
     } else if (notes[selectedDate]) {
       await supabase
         .from("calendar_notes")
-        .update({ content: text, updated_at: new Date().toISOString() })
+        .update({ content: text, photo_links: draftPhotos, updated_at: new Date().toISOString() })
         .eq("note_date", selectedDate);
     } else {
       await supabase.from("calendar_notes").insert({
         note_date: selectedDate,
         content: text,
+        photo_links: draftPhotos,
       });
     }
 
@@ -418,6 +451,54 @@ export default function CalendarPage() {
               rows={4}
               className="w-full rounded-xl border border-charcoal/15 bg-paper px-3 py-2.5 text-sm text-charcoal focus:outline-none focus:border-coral resize-none"
             />
+
+            <div className="mt-3">
+              <label
+                htmlFor="note-photo-upload"
+                className="flex items-center justify-center gap-2 border border-dashed border-charcoal/25 rounded-lg py-2.5 text-xs sm:text-sm text-charcoal/60 cursor-pointer hover:border-coral hover:text-coral-dark transition-colors"
+              >
+                <Upload size={14} />
+                {uploadingPhoto ? "Đang tải ảnh lên..." : "Thêm ảnh cho ngày này"}
+                <input
+                  id="note-photo-upload"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="sr-only"
+                  disabled={uploadingPhoto}
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files.length > 0) {
+                      handleUploadNotePhotos(e.target.files);
+                      e.target.value = "";
+                    }
+                  }}
+                />
+              </label>
+              {uploadError && (
+                <p className="text-xs text-coral-dark mt-1">{uploadError}</p>
+              )}
+              {draftPhotos.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {draftPhotos.map((link, i) => (
+                    <div key={i} className="relative w-16 h-16 rounded-lg overflow-hidden group">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={link} alt="" className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => removeDraftPhoto(i)}
+                        aria-label="Xoá ảnh"
+                        className="absolute inset-0 bg-ink/0 group-hover:bg-ink/50 flex items-center justify-center transition-colors"
+                      >
+                        <Trash2
+                          size={16}
+                          className="text-paper opacity-0 group-hover:opacity-100 transition-opacity"
+                        />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {selectedDate && photosByDate[selectedDate] && photosByDate[selectedDate].length > 0 && (
               <div className="mt-4">

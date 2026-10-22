@@ -58,4 +58,5 @@ export type CalendarNote = {
   created_by: string | null;
   created_at: string;
   updated_at: string;
+  photo_links: string[];
 };
