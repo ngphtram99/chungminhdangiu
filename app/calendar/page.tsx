@@ -12,6 +12,7 @@ import {
   ZoomOut,
   Clock,
   Upload,
+  Download,
 } from "lucide-react";
 
 const MONTH_NAMES = [
@@ -51,6 +52,7 @@ export default function CalendarPage() {
   const [draftPhotos, setDraftPhotos] = useState<string[]>([]);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [lightboxPhoto, setLightboxPhoto] = useState<{ url: string; name: string } | null>(null);
 
   useEffect(() => {
     fetchNotes();
@@ -481,13 +483,19 @@ export default function CalendarPage() {
                 <div className="mt-2 flex flex-wrap gap-2">
                   {draftPhotos.map((link, i) => (
                     <div key={i} className="relative w-16 h-16 rounded-lg overflow-hidden group">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={link} alt="" className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setLightboxPhoto({ url: link, name: "Ảnh ghi chú" })}
+                        className="w-full h-full block"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={link} alt="" className="w-full h-full object-cover" />
+                      </button>
                       <button
                         type="button"
                         onClick={() => removeDraftPhoto(i)}
                         aria-label="Xoá ảnh"
-                        className="absolute inset-0 bg-ink/0 group-hover:bg-ink/50 flex items-center justify-center transition-colors"
+                        className="absolute inset-0 bg-ink/0 group-hover:bg-ink/50 flex items-center justify-center transition-colors pointer-events-none group-hover:pointer-events-auto"
                       >
                         <Trash2
                           size={16}
@@ -511,14 +519,18 @@ export default function CalendarPage() {
                       key={i}
                       className="flex flex-col items-center gap-1 w-16"
                     >
-                      <div className="w-14 h-14 rounded-lg overflow-hidden border-2 border-ink">
+                      <button
+                        type="button"
+                        onClick={() => setLightboxPhoto({ url: p.url, name: p.name })}
+                        className="w-14 h-14 rounded-lg overflow-hidden border-2 border-ink"
+                      >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={p.url}
                           alt={p.name}
                           className="w-full h-full object-cover"
                         />
-                      </div>
+                      </button>
                       <span className="text-[9px] text-charcoal/60 text-center leading-tight line-clamp-2">
                         {p.name}
                       </span>
@@ -548,6 +560,45 @@ export default function CalendarPage() {
                 {saving ? "Đang lưu..." : "Lưu"}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {lightboxPhoto && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-ink/80 px-5"
+          onClick={() => setLightboxPhoto(null)}
+        >
+          <div
+            className="relative max-w-lg w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-end gap-2 mb-2">
+              <a
+                href={lightboxPhoto.url}
+                download
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 bg-coral hover:bg-coral-dark text-paper text-xs sm:text-sm font-semibold px-3.5 py-2 rounded-full transition-colors"
+              >
+                <Download size={14} />
+                Tải về
+              </a>
+              <button
+                onClick={() => setLightboxPhoto(null)}
+                aria-label="Đóng"
+                className="p-2 rounded-full bg-paper/90 hover:bg-paper text-ink transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={lightboxPhoto.url}
+              alt={lightboxPhoto.name}
+              className="w-full max-h-[75vh] object-contain rounded-xl border-[3px] border-paper"
+            />
+            <p className="text-center text-paper text-sm mt-2">{lightboxPhoto.name}</p>
           </div>
         </div>
       )}
