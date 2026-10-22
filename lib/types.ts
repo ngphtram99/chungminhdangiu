@@ -18,7 +18,7 @@ export interface Place {
   category: string | null;
 }
 
-export const CATEGORY_PRESETS = ["Ăn uống", "Cà phê", "Giải trí"];
+export const CATEGORY_PRESETS = ["Ăn uống", "Cà phê", "Giải trí", "Nhà thờ"];
 
 export const STATUS_LABEL: Record<PlaceStatus, string> = {
   visited: "Đã đi",
