@@ -49,6 +49,7 @@ export default function CalendarPage() {
   const [saving, setSaving] = useState(false);
   const [photosByDate, setPhotosByDate] = useState<Record<string, { url: string; name: string }[]>>({});
   const [recentNotes, setRecentNotes] = useState<CalendarNote[]>([]);
+  const [recentVisible, setRecentVisible] = useState(3);
   const [draftPhotos, setDraftPhotos] = useState<string[]>([]);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -106,7 +107,7 @@ export default function CalendarPage() {
       .from("calendar_notes")
       .select("*")
       .order("updated_at", { ascending: false })
-      .limit(5);
+      .limit(50);
     if (!error && data) setRecentNotes(data as CalendarNote[]);
   }
 
@@ -298,7 +299,7 @@ export default function CalendarPage() {
             </p>
           </div>
           <div className="flex flex-col gap-2">
-            {recentNotes.map((n) => (
+            {recentNotes.slice(0, recentVisible).map((n) => (
               <button
                 key={n.id}
                 onClick={() => goToNote(n)}
@@ -312,6 +313,28 @@ export default function CalendarPage() {
                 </span>
               </button>
             ))}
+            {(recentNotes.length > recentVisible || recentVisible > 3) && (
+              <div className="flex items-center justify-center gap-4 pt-1">
+                {recentNotes.length > recentVisible && (
+                  <button
+                    type="button"
+                    onClick={() => setRecentVisible((v) => v + 10)}
+                    className="text-xs font-mono text-coral-dark hover:text-coral transition-colors"
+                  >
+                    Xem thêm ({Math.min(10, recentNotes.length - recentVisible)})
+                  </button>
+                )}
+                {recentVisible > 3 && (
+                  <button
+                    type="button"
+                    onClick={() => setRecentVisible(3)}
+                    className="text-xs font-mono text-charcoal/60 hover:text-ink transition-colors"
+                  >
+                    Thu gọn
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}
