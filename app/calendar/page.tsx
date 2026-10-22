@@ -422,7 +422,7 @@ export default function CalendarPage() {
           })}
         </div>
       ) : (
-        <div className="paper-card rounded-xl border-[3px] border-ink shadow-[5px_5px_0_0_#1A1A1A] p-4 sm:p-8 pb-8 sm:pb-10 max-w-xl mx-auto">
+        <div className="paper-card rounded-xl border-[3px] border-ink shadow-[5px_5px_0_0_#1A1A1A] p-3 sm:p-8 pb-4 sm:pb-10 max-w-xl mx-auto">
           <div className="grid grid-cols-7 gap-y-2 text-center mb-1">
             {WEEKDAY_LABELS.map((w) => (
               <span
@@ -443,7 +443,7 @@ export default function CalendarPage() {
                 <button
                   key={idx}
                   onClick={() => openDay(dateKey)}
-                  className={`relative w-full aspect-square flex flex-col items-center justify-center rounded-xl border transition-colors p-1 ${
+                  className={`relative w-full aspect-square flex flex-col items-center justify-center rounded-xl border transition-colors p-1 overflow-hidden ${
                     isToday
                       ? "bg-ink text-paper border-ink font-semibold"
                       : note
@@ -451,10 +451,10 @@ export default function CalendarPage() {
                       : "border-charcoal/10 hover:border-coral/40 text-charcoal"
                   }`}
                 >
-                  <span className="text-sm sm:text-lg">{d}</span>
+                  <span className="text-base sm:text-xl leading-none">{d}</span>
                   {note && (
                     <span
-                      className={`text-[7px] sm:text-[9px] mt-0.5 line-clamp-1 px-1 ${
+                      className={`text-[10px] sm:text-xs leading-tight mt-1 line-clamp-1 px-0.5 ${
                         isToday ? "text-paper/80" : "text-coral-dark"
                       }`}
                     >
@@ -462,14 +462,14 @@ export default function CalendarPage() {
                     </span>
                   )}
                   {photosByDate[dateKey] && photosByDate[dateKey].length > 0 && (
-                    <span className="flex items-center justify-center mt-1 h-4 sm:h-5">
+                    <span className="flex items-center justify-center mt-1 h-5 sm:h-6">
                       {photosByDate[dateKey].slice(0, 4).map((p, i) => (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
                           key={i}
                           src={p.url}
                           alt={p.name}
-                          className="w-4 h-4 sm:w-5 sm:h-5 rounded-full border-2 border-paper object-cover"
+                          className="w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 border-paper object-cover"
                           style={{
                             marginLeft: i === 0 ? 0 : "-6px",
                             transform: `rotate(${(i - 1.5) * 12}deg)`,
