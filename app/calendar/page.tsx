@@ -291,26 +291,45 @@ export default function CalendarPage() {
       </div>
 
       {recentNotes.length > 0 && (
-        <div className="paper-card rounded-xl border-[3px] border-ink shadow-[4px_4px_0_0_#1A1A1A] p-4 sm:p-5 mb-5 sm:mb-8 max-w-xl mx-auto">
-          <div className="flex items-center gap-1.5 mb-3">
+        <div className="paper-card rounded-xl border-[3px] border-ink shadow-[4px_4px_0_0_#1A1A1A] p-3 sm:p-5 mb-3 sm:mb-8 max-w-xl mx-auto">
+          <div className="flex items-center gap-1.5 mb-1.5">
             <Clock size={14} className="text-coral-dark" />
             <p className="text-xs sm:text-sm font-semibold text-ink">
               Ghi chú gần đây
             </p>
           </div>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1">
             {recentNotes.slice(0, recentVisible).map((n) => (
               <button
                 key={n.id}
                 onClick={() => goToNote(n)}
-                className="flex flex-col items-start gap-0.5 text-left px-2.5 py-2 rounded-lg hover:bg-coral/10 transition-colors"
+                className="flex flex-row items-center gap-3 text-left px-2.5 h-11 sm:h-12 rounded-lg hover:bg-coral/10 transition-colors w-full"
               >
-                <span className="text-[9px] sm:text-[10px] font-mono text-charcoal/50">
+                <span className="shrink-0 w-[78px] sm:w-24 text-[11px] sm:text-xs font-mono text-charcoal/50">
                   {n.note_date.split("-").reverse().join("/")}
                 </span>
-                <span className="text-[11px] sm:text-sm text-charcoal line-clamp-1 w-full">
-                  {n.content}
+                <span className="flex-1 min-w-0 truncate text-sm sm:text-base text-charcoal">
+                  {n.content || "Ảnh"}
                 </span>
+                {n.photo_links && n.photo_links.length > 0 && (
+                  <span className="shrink-0 flex items-center">
+                    {n.photo_links.slice(0, 3).map((url, pi) => (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        key={pi}
+                        src={url}
+                        alt=""
+                        className="w-8 h-8 sm:w-9 sm:h-9 rounded-md border-2 border-paper object-cover"
+                        style={{ marginLeft: pi === 0 ? 0 : "-10px", zIndex: 10 - pi }}
+                      />
+                    ))}
+                    {n.photo_links.length > 3 && (
+                      <span className="ml-1.5 text-xs font-mono text-charcoal/60">
+                        +{n.photo_links.length - 3}
+                      </span>
+                    )}
+                  </span>
+                )}
               </button>
             ))}
             {(recentNotes.length > recentVisible || recentVisible > 3) && (
