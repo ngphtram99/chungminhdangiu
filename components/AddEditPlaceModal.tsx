@@ -50,7 +50,8 @@ export default function AddEditPlaceModal({
   lockedStatus?: PlaceStatus;
 }) {
   const [values, setValues] = useState<PlaceFormValues>(EMPTY);
-  const [uploading, setUploading] = useState(false);
+  const [pending, setPending] = useState<{ id: string; preview: string }[]>([]);
+  const uploading = pending.length > 0;
   const [saving, setSaving] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [gettingLocation, setGettingLocation] = useState(false);
@@ -117,29 +118,36 @@ export default function AddEditPlaceModal({
   }
 
   async function handleUploadPhotos(files: FileList) {
-    setUploading(true);
     setUploadError(null);
-    try {
-      const uploaded: string[] = [];
-      for (const file of Array.from(files)) {
-        const ext = file.name.split(".").pop();
-        const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-        const { error } = await supabase.storage
-          .from("place-photos")
-          .upload(path, file);
-        if (error) throw error;
-        const { data } = supabase.storage.from("place-photos").getPublicUrl(path);
-        uploaded.push(data.publicUrl);
-      }
-      setValues((v) => ({ ...v, photo_links: [...v.photo_links, ...uploaded] }));
-    } catch (err) {
-      setUploadError(
-        "Upload ảnh thất bại. Kiểm tra đã tạo bucket 'place-photos' trong Supabase Storage chưa (xem README.md)."
-      );
-      console.error(err);
-    } finally {
-      setUploading(false);
-    }
+
+    await Promise.all(
+      Array.from(files).map(async (file) => {
+        const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        const preview = URL.createObjectURL(file);
+        setPending((p) => [...p, { id, preview }]);
+
+        try {
+          const ext = file.name.split(".").pop();
+          const path = `${id}.${ext}`;
+          const { error } = await supabase.storage
+            .from("place-photos")
+            .upload(path, file, { cacheControl: "31536000" });
+          if (error) throw error;
+
+          const { data } = supabase.storage.from("place-photos").getPublicUrl(path);
+          setValues((v) => ({
+            ...v,
+            photo_links: [...v.photo_links, data.publicUrl],
+          }));
+        } catch (err) {
+          setUploadError("Upload ảnh thất bại. Thử lại nhé.");
+          console.error(err);
+        } finally {
+          setPending((p) => p.filter((x) => x.id !== id));
+          URL.revokeObjectURL(preview);
+        }
+      })
+    );
   }
 
   const removePhoto = (idx: number) => {
@@ -364,14 +372,13 @@ export default function AddEditPlaceModal({
               className="flex items-center justify-center gap-2 border border-dashed border-charcoal/25 rounded-lg py-3 text-sm text-charcoal/60 cursor-pointer hover:border-ink hover:text-ink transition-colors"
             >
               <Upload size={15} />
-              {uploading ? "Đang tải ảnh lên..." : "Chọn ảnh từ máy (chọn được nhiều ảnh)"}
+              {"Chọn ảnh từ máy (chọn được nhiều ảnh)"}
               <input
                 id="place-photo-upload"
                 type="file"
                 accept="image/*"
                 multiple
                 className="sr-only"
-                disabled={uploading}
                 onChange={(e) => {
                   if (e.target.files && e.target.files.length > 0) {
                     handleUploadPhotos(e.target.files);
@@ -383,10 +390,10 @@ export default function AddEditPlaceModal({
             {uploadError && (
               <p className="text-xs text-coral-dark mt-1">{uploadError}</p>
             )}
-            {values.photo_links.length > 0 && (
+            {(values.photo_links.length > 0 || pending.length > 0) && (
               <div className="mt-2 flex flex-wrap gap-2">
                 {values.photo_links.map((link, i) => (
-                  <div key={i} className="relative w-16 h-16 rounded-lg overflow-hidden group">
+                  <div key={link} className="relative w-16 h-16 rounded-lg overflow-hidden group">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={link} alt="" className="w-full h-full object-cover" />
                     <button
@@ -400,6 +407,15 @@ export default function AddEditPlaceModal({
                         className="text-paper opacity-0 group-hover:opacity-100 transition-opacity"
                       />
                     </button>
+                  </div>
+                ))}
+                {pending.map((p) => (
+                  <div key={p.id} className="relative w-16 h-16 rounded-lg overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={p.preview} alt="" className="w-full h-full object-cover opacity-50" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-5 h-5 border-2 border-paper border-t-transparent rounded-full animate-spin" />
+                    </div>
                   </div>
                 ))}
               </div>
@@ -417,10 +433,10 @@ export default function AddEditPlaceModal({
 
           <button
             type="submit"
-            disabled={saving}
+            disabled={saving || uploading}
             className="mt-2 w-full py-3 rounded-lg bg-coral hover:bg-coral-dark text-paper font-semibold transition-colors disabled:opacity-60"
           >
-            {saving ? "Đang lưu..." : initial ? "Lưu thay đổi" : "Thêm địa điểm"}
+            {saving ? "Đang lưu..." : uploading ? "Đang tải ảnh..." : initial ? "Lưu thay đổi" : "Thêm địa điểm"}
           </button>
         </form>
       </div>
