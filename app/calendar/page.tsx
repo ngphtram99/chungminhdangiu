@@ -47,7 +47,7 @@ export default function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
   const [saving, setSaving] = useState(false);
-  const [photosByDate, setPhotosByDate] = useState<Record<string, { url: string; name: string }[]>>({});
+  const [placePhotosByDate, setPhotosByDate] = useState<Record<string, { url: string; name: string }[]>>({});
   const [recentNotes, setRecentNotes] = useState<CalendarNote[]>([]);
   const [recentVisible, setRecentVisible] = useState(3);
   const [draftPhotos, setDraftPhotos] = useState<string[]>([]);
@@ -224,6 +224,20 @@ export default function CalendarPage() {
     setSaving(false);
     setSelectedDate(null);
   }
+
+  const photosByDate = useMemo(() => {
+    const merged: Record<string, { url: string; name: string }[]> = {};
+    Object.entries(placePhotosByDate).forEach(([d, list]) => {
+      merged[d] = [...list];
+    });
+    Object.entries(notes).forEach(([d, n]) => {
+      (n?.photo_links || []).forEach((url) => {
+        if (!merged[d]) merged[d] = [];
+        merged[d].push({ url, name: "Ghi chú" });
+      });
+    });
+    return merged;
+  }, [placePhotosByDate, notes]);
 
   const months = useMemo(() => Array.from({ length: 12 }, (_, i) => i), []);
   const todayKey = toDateKey(today.getFullYear(), today.getMonth(), today.getDate());
@@ -581,13 +595,13 @@ export default function CalendarPage() {
               )}
             </div>
 
-            {selectedDate && photosByDate[selectedDate] && photosByDate[selectedDate].length > 0 && (
+            {selectedDate && placePhotosByDate[selectedDate] && placePhotosByDate[selectedDate].length > 0 && (
               <div className="mt-4">
                 <p className="text-xs text-charcoal/50 font-mono mb-2">
                   Quán đã đi hôm đó:
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {photosByDate[selectedDate].map((p, i) => (
+                  {placePhotosByDate[selectedDate].map((p, i) => (
                     <div
                       key={i}
                       className="flex flex-col items-center gap-1 w-16"
