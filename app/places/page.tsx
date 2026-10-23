@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { supabase } from "@/lib/supabase";
 import { Place } from "@/lib/types";
-import { extractLatLngFromMapsLink } from "@/lib/geo";
+import { extractLatLngFromMapsLink, resolveLatLngFromMapsLink } from "@/lib/geo";
 import PlaceListItem from "@/components/PlaceListItem";
 import AddEditPlaceModal, { PlaceFormValues } from "@/components/AddEditPlaceModal";
 import CategoryFilter, { CategoryFilterValue, matchesCategory, getExtraCategories } from "@/components/CategoryFilter";
@@ -145,6 +145,13 @@ export default function PlacesPage() {
     const failedNames: string[] = [];
 
     for (const place of missing) {
+      // Thử 0: lấy toạ độ từ link Google Maps (kể cả link rút gọn)
+      const fromLink = await resolveLatLngFromMapsLink(place.maps_link);
+      if (fromLink) {
+        await supabase.from("places").update(fromLink).eq("id", place.id);
+        continue;
+      }
+
       // Thử 1: địa chỉ đầy đủ
       let coords = await tryGeocode(`${place.address}, Việt Nam`);
       await new Promise((resolve) => setTimeout(resolve, 1100));

@@ -47,10 +47,32 @@ export function extractLatLngFromMapsLink(
   link: string | null
 ): { lat: number; lng: number } | null {
   if (!link) return null;
-  const match = link.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+  const match =
+    link.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/) ||
+    link.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
   if (!match) return null;
   const lat = parseFloat(match[1]);
   const lng = parseFloat(match[2]);
   if (isNaN(lat) || isNaN(lng)) return null;
   return { lat, lng };
+}
+
+/**
+ * Lấy toạ độ từ link Google Maps bất kỳ (kể cả link rút gọn maps.app.goo.gl)
+ * bằng cách nhờ server mở link rồi đọc toạ độ.
+ */
+export async function resolveLatLngFromMapsLink(
+  link: string | null
+): Promise<{ lat: number; lng: number } | null> {
+  if (!link) return null;
+  const direct = extractLatLngFromMapsLink(link);
+  if (direct) return direct;
+  try {
+    const res = await fetch(`/api/resolve-maps?link=${encodeURIComponent(link)}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.coords ?? null;
+  } catch {
+    return null;
+  }
 }
