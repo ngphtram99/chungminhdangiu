@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Place, PlaceStatus, STATUS_LABEL, CATEGORY_PRESETS } from "@/lib/types";
 import { supabase } from "@/lib/supabase";
 import { HCMC_DISTRICTS } from "@/lib/geo";
-import { X, Trash2, Upload, Navigation } from "lucide-react";
+import { X, Trash2, Upload, Navigation, Download } from "lucide-react";
 
 export type PlaceFormValues = {
   name: string;
@@ -58,6 +58,8 @@ export default function AddEditPlaceModal({
   const [locationError, setLocationError] = useState<string | null>(null);
   const [isCustomDistrict, setIsCustomDistrict] = useState(false);
   const [isCustomCategory, setIsCustomCategory] = useState(false);
+  const [selectedPhotos, setSelectedPhotos] = useState<number[]>([]);
+  const [lightboxPhoto, setLightboxPhoto] = useState<string | null>(null);
 
   useEffect(() => {
     if (initial) {
@@ -156,6 +158,20 @@ export default function AddEditPlaceModal({
       photo_links: v.photo_links.filter((_, i) => i !== idx),
     }));
   };
+
+  function toggleSelectPhoto(idx: number) {
+    setSelectedPhotos((prev) =>
+      prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]
+    );
+  }
+
+  function removeSelectedPhotos() {
+    setValues((v) => ({
+      ...v,
+      photo_links: v.photo_links.filter((_, i) => !selectedPhotos.includes(i)),
+    }));
+    setSelectedPhotos([]);
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -392,23 +408,37 @@ export default function AddEditPlaceModal({
             )}
             {(values.photo_links.length > 0 || pending.length > 0) && (
               <div className="mt-2 flex flex-wrap gap-2">
-                {values.photo_links.map((link, i) => (
-                  <div key={link} className="relative w-16 h-16 rounded-lg overflow-hidden group">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={link} alt="" className="w-full h-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => removePhoto(i)}
-                      aria-label="Xoá ảnh"
-                      className="absolute inset-0 bg-ink/0 group-hover:bg-ink/50 flex items-center justify-center transition-colors"
+                {values.photo_links.map((link, i) => {
+                  const isSel = selectedPhotos.includes(i);
+                  return (
+                    <div
+                      key={link}
+                      className={`relative w-16 h-16 rounded-lg overflow-hidden border-2 transition-colors ${
+                        isSel ? "border-coral" : "border-transparent"
+                      }`}
                     >
-                      <Trash2
-                        size={16}
-                        className="text-paper opacity-0 group-hover:opacity-100 transition-opacity"
-                      />
-                    </button>
-                  </div>
-                ))}
+                      <button
+                        type="button"
+                        onClick={() => setLightboxPhoto(link)}
+                        className="w-full h-full block"
+                        aria-label="Phóng to ảnh"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={link} alt="" className="w-full h-full object-cover" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => toggleSelectPhoto(i)}
+                        aria-label={isSel ? "Bỏ chọn ảnh" : "Chọn ảnh"}
+                        className={`absolute top-1 right-1 w-5 h-5 rounded-full border-2 border-paper flex items-center justify-center text-[10px] leading-none text-paper ${
+                          isSel ? "bg-coral" : "bg-ink/50"
+                        }`}
+                      >
+                        {isSel ? "✓" : ""}
+                      </button>
+                    </div>
+                  );
+                })}
                 {pending.map((p) => (
                   <div key={p.id} className="relative w-16 h-16 rounded-lg overflow-hidden">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -418,6 +448,16 @@ export default function AddEditPlaceModal({
                     </div>
                   </div>
                 ))}
+                {selectedPhotos.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={removeSelectedPhotos}
+                    className="w-full text-left inline-flex items-center gap-1.5 text-charcoal/70 hover:text-ink text-xs font-medium mt-1"
+                  >
+                    <Trash2 size={13} />
+                    Bỏ {selectedPhotos.length} ảnh đã chọn
+                  </button>
+                )}
               </div>
             )}
           </Field>
@@ -440,6 +480,41 @@ export default function AddEditPlaceModal({
           </button>
         </form>
       </div>
+
+      {lightboxPhoto && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-ink/80 px-5"
+          onClick={() => setLightboxPhoto(null)}
+        >
+          <div className="relative max-w-lg w-full" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-end gap-2 mb-2">
+              <a
+                href={lightboxPhoto}
+                download
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 bg-coral hover:bg-coral-dark text-paper text-xs sm:text-sm font-semibold px-3.5 py-2 rounded-full transition-colors"
+              >
+                <Download size={14} />
+                Tải về
+              </a>
+              <button
+                onClick={() => setLightboxPhoto(null)}
+                aria-label="Đóng"
+                className="p-2 rounded-full bg-paper/90 hover:bg-paper text-ink transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={lightboxPhoto}
+              alt="Ảnh địa điểm"
+              className="w-full max-h-[75vh] object-contain rounded-xl border-[3px] border-paper"
+            />
+          </div>
+        </div>
+      )}
 
       <style jsx global>{`
         .input {
