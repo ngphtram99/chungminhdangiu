@@ -1,5 +1,6 @@
 "use client";
 
+import { t } from "@/lib/i18n";
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { CoupleProfile } from "@/lib/types";
@@ -53,7 +54,7 @@ export default function EditCoupleModal({
       else setPartner2Avatar(data.publicUrl);
     } catch (err: any) {
       setError(
-        "Upload ảnh thất bại. Kiểm tra lại đã tạo bucket 'avatars' trong Supabase Storage chưa (xem README.md)."
+        t("Upload ảnh thất bại. Kiểm tra lại đã tạo bucket 'avatars' trong Supabase Storage chưa (xem README.md).")
       );
       console.error(err);
     } finally {
@@ -80,7 +81,7 @@ export default function EditCoupleModal({
       : await supabase.from("couple_profile").insert(payload);
 
     if (saveError) {
-      setError("Lỗi khi lưu: " + saveError.message);
+      setError(t("Lỗi khi lưu: ") + saveError.message);
       setSaving(false);
       return;
     }
@@ -99,10 +100,10 @@ export default function EditCoupleModal({
         className="paper-card text-charcoal w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl max-h-[92vh] overflow-y-auto shadow-2xl"
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-charcoal/10 sticky top-0 paper-card">
-          <h2 className="font-display text-xl font-semibold">Sửa hồ sơ hai người</h2>
+          <h2 className="font-display text-xl font-semibold">{t("Sửa hồ sơ hai người")}</h2>
           <button
             onClick={onClose}
-            aria-label="Đóng"
+            aria-label={t("Đóng")}
             className="p-1.5 rounded-full hover:bg-charcoal/10"
           >
             <X size={18} />
@@ -111,7 +112,7 @@ export default function EditCoupleModal({
 
         <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-5">
           <AvatarField
-            label="Ảnh của bạn"
+            label={t("Ảnh của bạn")}
             name={partner1Name}
             onNameChange={setPartner1Name}
             avatarUrl={partner1Avatar}
@@ -120,7 +121,7 @@ export default function EditCoupleModal({
           />
 
           <AvatarField
-            label="Ảnh người yêu"
+            label={t("Ảnh người yêu")}
             name={partner2Name}
             onNameChange={setPartner2Name}
             avatarUrl={partner2Avatar}
@@ -129,7 +130,7 @@ export default function EditCoupleModal({
           />
 
           <label className="flex flex-col gap-1.5 text-sm font-medium text-charcoal/90">
-            <span>Ngày yêu nhau (để đếm số ngày bên nhau)</span>
+            <span>{t("Ngày yêu nhau (để đếm số ngày bên nhau)")}</span>
             <input
               type="date"
               value={anniversary}
@@ -145,7 +146,7 @@ export default function EditCoupleModal({
             disabled={saving || uploading !== null}
             className="mt-1 w-full py-3 rounded-lg bg-ink hover:bg-ink-light text-paper font-semibold transition-colors disabled:opacity-60"
           >
-            {saving ? "Đang lưu..." : "Lưu hồ sơ"}
+            {saving ? t("Đang lưu...") : t("Lưu hồ sơ")}
           </button>
         </form>
       </div>
@@ -215,12 +216,12 @@ function AvatarField({
       </label>
       <div className="flex-1 flex flex-col gap-1.5">
         <span className="text-xs font-medium text-charcoal/70">
-          {label} {uploading && "(đang tải lên...)"}
+          {label} {uploading && t("(đang tải lên...)")}
         </span>
         <input
           value={name}
           onChange={(e) => onNameChange(e.target.value)}
-          placeholder="Tên"
+          placeholder={t("Tên")}
           className="input"
         />
       </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { t, locale } from "@/lib/i18n";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { CoupleProfile } from "@/lib/types";
@@ -52,13 +53,13 @@ export default function LegoPreviewPage() {
         >
           <div className="flex items-center justify-center gap-3 sm:gap-5">
             <LegoAvatar
-              name={profile?.partner1_name || "Bạn"}
+              name={t(profile?.partner1_name || "Bạn")}
               url={profile?.partner1_avatar_url}
               fill="#1A1A1A"
             />
             <Heart size={28} className="fill-white text-white shrink-0" />
             <LegoAvatar
-              name={profile?.partner2_name || "Người yêu"}
+              name={t(profile?.partner2_name || "Người yêu")}
               url={profile?.partner2_avatar_url}
               fill="#E8D2AC"
             />
@@ -71,14 +72,14 @@ export default function LegoPreviewPage() {
             {days !== null ? (
               <>
                 <span className="text-3xl sm:text-4xl font-black text-[#1A1A1A] leading-none">
-                  {days.toLocaleString("vi-VN")}
+                  {days.toLocaleString(locale())}
                 </span>
                 <span className="text-[10px] sm:text-xs font-bold text-[#1A1A1A]/70 tracking-wide mt-1 uppercase">
-                  ngày bên nhau
+                  {t("ngày bên nhau")}
                 </span>
               </>
             ) : (
-              <span className="text-xs text-[#1A1A1A]/60">Chưa có ngày kỷ niệm</span>
+              <span className="text-xs text-[#1A1A1A]/60">{t("Chưa có ngày kỷ niệm")}</span>
             )}
           </div>
         </div>

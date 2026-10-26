@@ -1,5 +1,6 @@
 "use client";
 
+import { t } from "@/lib/i18n";
 import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { supabase } from "@/lib/supabase";
@@ -55,7 +56,7 @@ export default function PlacesPage() {
 
     if (error) {
       setError(
-        "Không tải được dữ liệu. Kiểm tra lại cấu hình Supabase trong README.md."
+        t("Không tải được dữ liệu. Kiểm tra lại cấu hình Supabase trong README.md.")
       );
       console.error(error);
     } else {
@@ -109,7 +110,7 @@ export default function PlacesPage() {
   }
 
   async function handleDelete(place: Place) {
-    if (!confirm(`Xoá "${place.name}" khỏi danh sách?`)) return;
+    if (!confirm(t("Xoá “{name}” khỏi danh sách?", { name: place.name }))) return;
     const { error } = await supabase.from("places").delete().eq("id", place.id);
     if (error) {
       alert("Lỗi khi xoá: " + error.message);
@@ -186,9 +187,9 @@ export default function PlacesPage() {
     setMapOpen(true);
     if (failed.length > 0) {
       alert(
-        "Không tự tìm được vị trí cho:\n\n" +
+        t("Không tự tìm được vị trí cho:") + "\n\n" +
           failed.map((n) => "• " + n).join("\n") +
-          "\n\nBạn mở sửa từng địa điểm đó và bấm \u0022Lấy vị trí hiện tại\u0022 khi có dịp ghé lại nhé."
+          "\n\n" + t("Bạn mở sửa từng địa điểm đó và bấm “Lấy vị trí hiện tại” khi có dịp ghé lại nhé.")
       );
     }
   }
@@ -233,7 +234,7 @@ export default function PlacesPage() {
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Tìm theo tên, địa chỉ, hoặc quận..."
+          placeholder={t("Tìm theo tên, địa chỉ, hoặc quận...")}
           className="w-full paper-card rounded-lg border-[3px] border-ink shadow-[3px_3px_0_0_#1A1A1A] pl-10 pr-4 py-2.5 text-sm text-charcoal placeholder:text-charcoal/40 focus:outline-none"
         />
       </div>
@@ -249,16 +250,16 @@ export default function PlacesPage() {
       )}
 
       {loading ? (
-        <p className="text-charcoal/60 font-mono text-sm">Đang tải...</p>
+        <p className="text-charcoal/60 font-mono text-sm">{t("Đang tải...")}</p>
       ) : filteredPlaces.length === 0 ? (
         <div className="paper-card text-charcoal rounded-xl border-[3px] border-ink shadow-[4px_4px_0_0_#1A1A1A] p-8 sm:p-10 text-center">
           <p className="font-display text-lg italic mb-1">
-            {places.length === 0 ? "Chưa có gì ở đây cả" : "Không tìm thấy kết quả"}
+            {places.length === 0 ? t("Chưa có gì ở đây cả") : t("Không tìm thấy kết quả")}
           </p>
           <p className="text-charcoal/60 text-sm">
             {places.length === 0
-              ? "Bấm nút + góc dưới để bắt đầu ghi lại kỷ niệm nhé."
-              : "Thử từ khoá khác xem sao."}
+              ? t("Bấm nút + góc dưới để bắt đầu ghi lại kỷ niệm nhé.")
+              : t("Thử từ khoá khác xem sao.")}
           </p>
         </div>
       ) : (
@@ -281,7 +282,7 @@ export default function PlacesPage() {
         <button
           onClick={handleOpenMap}
           disabled={geocoding}
-          aria-label="Xem bản đồ"
+          aria-label={t("Xem bản đồ")}
           className="w-14 h-14 rounded-lg border-[3px] border-ink bg-ink hover:bg-charcoal text-paper shadow-[4px_4px_0_0_#1A1A1A] flex items-center justify-center transition-colors disabled:opacity-60"
         >
           {geocoding ? (
@@ -295,7 +296,7 @@ export default function PlacesPage() {
             setEditingPlace(null);
             setModalOpen(true);
           }}
-          aria-label="Thêm địa điểm"
+          aria-label={t("Thêm địa điểm")}
           className="w-14 h-14 rounded-lg border-[3px] border-ink bg-coral hover:bg-coral-dark text-paper shadow-[4px_4px_0_0_#1A1A1A] flex items-center justify-center transition-colors"
         >
           <Plus size={24} />
@@ -307,7 +308,7 @@ export default function PlacesPage() {
           <div className="paper-card rounded-xl border-[3px] border-ink shadow-[5px_5px_0_0_#1A1A1A] p-6 max-w-xs w-full text-center flex flex-col items-center gap-3">
             <Loader2 size={28} className="animate-spin text-coral-dark" />
             <p className="text-sm text-charcoal/70">
-              Đang tìm vị trí cho các địa điểm mới, đợi mình xíu nha...
+              {t("Đang tìm vị trí cho các địa điểm mới, đợi mình xíu nha...")}
             </p>
           </div>
         </div>

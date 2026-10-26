@@ -1,5 +1,6 @@
 "use client";
 
+import { t } from "@/lib/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Place } from "@/lib/types";
@@ -125,7 +126,7 @@ export default function RandomPage() {
   }
 
   async function handleDeletePlace(place: Place) {
-    if (!confirm(`Xoá "${place.name}" khỏi danh sách?`)) return;
+    if (!confirm(t("Xoá “{name}” khỏi danh sách?", { name: place.name }))) return;
     const { error } = await supabase.from("places").delete().eq("id", place.id);
     if (error) {
       alert("Lỗi khi xoá: " + error.message);
@@ -178,8 +179,8 @@ export default function RandomPage() {
     if (pool.length === 0) {
       alert(
         mode === "want_to_go"
-          ? "Chưa có địa điểm nào ở mục \u0022Muốn đi\u0022 khớp phân loại đã chọn."
-          : "Chưa có địa điểm nào ở mục \u0022Đã đi\u0022 khớp phân loại đã chọn."
+          ? t("Chưa có địa điểm nào ở mục “Muốn đi” khớp phân loại đã chọn.")
+          : t("Chưa có địa điểm nào ở mục “Đã đi” khớp phân loại đã chọn.")
       );
       return;
     }
@@ -253,14 +254,14 @@ export default function RandomPage() {
   return (
     <main className="w-full max-w-3xl mx-auto px-4 sm:px-8 pt-4 sm:pt-8 pb-10 flex flex-col items-center text-center">
       {loading ? (
-        <p className="text-charcoal/60 font-mono text-sm">Đang tải...</p>
+        <p className="text-charcoal/60 font-mono text-sm">{t("Đang tải...")}</p>
       ) : places.length === 0 && visitedPlaces.length === 0 ? (
         <div className="paper-card rounded-xl border-[3px] border-ink shadow-[4px_4px_0_0_#1A1A1A] p-8 text-center max-w-sm">
           <p className="font-display text-lg italic mb-1">
-            Chưa có địa điểm nào cả
+            {t("Chưa có địa điểm nào cả")}
           </p>
           <p className="text-charcoal/60 text-sm">
-            Bấm nút &ldquo;+&rdquo; góc dưới bên phải để thêm địa điểm nhé.
+            {t("Bấm nút “+” góc dưới bên phải để thêm địa điểm nhé.")}
           </p>
         </div>
       ) : (
@@ -286,7 +287,7 @@ export default function RandomPage() {
                     <div className="flex items-center justify-center gap-1.5 text-coral-dark mb-1.5">
                       <PartyPopper size={14} />
                       <span className="text-[10px] font-mono uppercase tracking-wide">
-                        Đi địa điểm này nè!
+                        {t("Đi địa điểm này nè!")}
                       </span>
                     </div>
                     <p className="font-display italic text-base sm:text-lg text-ink mb-1.5">
@@ -298,7 +299,7 @@ export default function RandomPage() {
                     </p>
                     {result.maps_link && (
                       <a href={result.maps_link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-coral-dark hover:text-coral text-[11px] sm:text-xs font-medium transition-colors">
-                        Xem trên Maps
+                        {t("Xem trên Maps")}
                         <ExternalLink size={11} />
                       </a>
                     )}
@@ -316,7 +317,7 @@ export default function RandomPage() {
                 className="inline-flex items-center gap-2 bg-coral hover:bg-coral-dark text-paper font-semibold px-6 py-3 rounded-lg border-[3px] border-ink shadow-[4px_4px_0_0_#1A1A1A] transition-colors disabled:opacity-60"
               >
                 <Shuffle size={18} className={spinning ? "animate-spin" : ""} />
-                {spinning ? "Đang quay..." : "Quay lại"}
+                {spinning ? t("Đang quay...") : t("Quay lại")}
               </button>
             </>
           )}
@@ -337,7 +338,7 @@ export default function RandomPage() {
               {districtNames.map((district) => (
                 <div key={district}>
                   <h3 className="font-mono text-xs uppercase tracking-wide text-charcoal/50 mb-3">
-                    {district} ({groupedByDistrict[district].length})
+                    {t(district)} ({groupedByDistrict[district].length})
                   </h3>
                   <div className="flex flex-col gap-2.5 sm:gap-3">
                     {groupedByDistrict[district].map((place) => (
@@ -377,7 +378,7 @@ export default function RandomPage() {
           setEditingPlace(null);
           setModalOpen(true);
         }}
-        aria-label="Thêm địa điểm"
+        aria-label={t("Thêm địa điểm")}
         className="fixed right-4 sm:right-8 bottom-[calc(5.5rem+env(safe-area-inset-bottom)+0.75rem)] sm:bottom-[7.25rem] z-40 w-14 h-14 rounded-lg border-[3px] border-ink bg-coral hover:bg-coral-dark text-paper shadow-[4px_4px_0_0_#1A1A1A] flex items-center justify-center transition-colors"
       >
         <Plus size={20} />
@@ -399,11 +400,11 @@ export default function RandomPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center px-5 bg-ink/40">
           <div className="paper-card rounded-xl border-[3px] border-ink shadow-[5px_5px_0_0_#1A1A1A] p-5 sm:p-6 w-full max-w-sm text-center">
             <div className="flex items-center justify-between mb-3">
-              <p className="font-display italic text-lg text-ink">Quay địa điểm nào?</p>
+              <p className="font-display italic text-lg text-ink">{t("Quay địa điểm nào?")}</p>
               <button
                 onClick={() => setShowSpinChoice(false)}
                 className="text-charcoal/50 hover:text-ink transition-colors"
-                aria-label="Đóng"
+                aria-label={t("Đóng")}
               >
                 <X size={18} />
               </button>
@@ -413,13 +414,13 @@ export default function RandomPage() {
                 onClick={() => startSpin("want_to_go")}
                 className="w-full bg-coral hover:bg-coral-dark text-paper font-semibold py-2.5 rounded-lg border-2 border-ink shadow-[3px_3px_0_0_#1A1A1A] transition-colors"
               >
-                Chưa đi ({filteredWantToGo.length})
+                {t("Chưa đi")} ({filteredWantToGo.length})
               </button>
               <button
                 onClick={() => startSpin("visited")}
                 className="w-full bg-ink hover:bg-charcoal text-paper font-semibold py-2.5 rounded-lg border-2 border-ink transition-colors"
               >
-                Đã đi ({filteredVisited.length})
+                {t("Đã đi")} ({filteredVisited.length})
               </button>
             </div>
           </div>
@@ -431,12 +432,12 @@ export default function RandomPage() {
           <div className="paper-card rounded-xl border-[3px] border-ink shadow-[5px_5px_0_0_#1A1A1A] p-5 sm:p-6 w-full max-w-sm text-left max-h-[85vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-1">
               <p className="font-display italic text-lg text-ink">
-                Đánh dấu đã đi
+                {t("Đánh dấu đã đi")}
               </p>
               <button
                 onClick={() => setVisitedTarget(null)}
                 className="text-charcoal/50 hover:text-ink transition-colors"
-                aria-label="Đóng"
+                aria-label={t("Đóng")}
               >
                 <X size={18} />
               </button>
@@ -446,13 +447,13 @@ export default function RandomPage() {
             </p>
 
             <label className="flex flex-col gap-1.5 text-sm font-medium text-charcoal/90 mb-3">
-              <span>Đánh giá</span>
+              <span>{t("Đánh giá")}</span>
               <select
                 value={visitedRating}
                 onChange={(e) => setVisitedRating(Number(e.target.value))}
                 className="rounded-lg border-2 border-ink px-3 py-2 text-sm text-charcoal bg-paper focus:outline-none"
               >
-                <option value={0}>Chưa chấm</option>
+                <option value={0}>{t("Chưa chấm")}</option>
                 {[1, 2, 3, 4, 5].map((n) => (
                   <option key={n} value={n}>
                     {"★".repeat(n)}
@@ -462,11 +463,11 @@ export default function RandomPage() {
             </label>
 
             <label className="flex flex-col gap-1.5 text-sm font-medium text-charcoal/90 mb-4">
-              <span>Ghi chú</span>
+              <span>{t("Ghi chú")}</span>
               <textarea
                 value={visitedNotes}
                 onChange={(e) => setVisitedNotes(e.target.value)}
-                placeholder="Món ngon, kỷ niệm, lưu ý..."
+                placeholder={t("Món ngon, kỷ niệm, lưu ý...")}
                 rows={3}
                 className="rounded-lg border-2 border-ink px-3 py-2 text-sm text-charcoal bg-paper focus:outline-none resize-none w-full"
               />
@@ -477,11 +478,11 @@ export default function RandomPage() {
               className="w-full inline-flex items-center justify-center gap-2 bg-coral hover:bg-coral-dark text-paper font-semibold py-2.5 rounded-lg border-2 border-ink shadow-[3px_3px_0_0_#1A1A1A] transition-colors mb-3"
             >
               <Check size={16} />
-              Hôm nay
+              {t("Hôm nay")}
             </button>
 
             <p className="text-xs text-charcoal/50 font-mono mb-1.5">
-              Hoặc chọn ngày khác:
+              {t("Hoặc chọn ngày khác:")}
             </p>
             <div className="flex items-center gap-2">
               <input
@@ -495,7 +496,7 @@ export default function RandomPage() {
                 disabled={!customDate}
                 className="bg-ink hover:bg-charcoal text-paper text-sm font-semibold px-4 py-2 rounded-lg border-2 border-ink transition-colors disabled:opacity-50"
               >
-                Xác nhận
+                {t("Xác nhận")}
               </button>
             </div>
           </div>

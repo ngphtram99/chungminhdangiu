@@ -1,5 +1,6 @@
 "use client";
 
+import { t } from "@/lib/i18n";
 import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, CircleMarker, useMap } from "react-leaflet";
 import L from "leaflet";
@@ -76,16 +77,16 @@ export default function PlacesMapView({
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 px-6">
         <div className="paper-card rounded-xl border-[3px] border-ink shadow-[5px_5px_0_0_#1A1A1A] p-6 max-w-sm w-full text-center">
           <p className="font-display italic text-lg text-ink mb-2">
-            Chưa có địa điểm nào có vị trí
+            {t("Chưa có địa điểm nào có vị trí")}
           </p>
           <p className="text-sm text-charcoal/60 mb-4">
-            Sửa lại địa điểm và bấm &ldquo;Lấy vị trí hiện tại&rdquo; để nó hiện lên bản đồ nhé.
+            {t("Sửa lại địa điểm và bấm “Lấy vị trí hiện tại” để nó hiện lên bản đồ nhé.")}
           </p>
           <button
             onClick={onClose}
             className="w-full bg-ink hover:bg-charcoal text-paper font-semibold py-2.5 rounded-lg transition-colors"
           >
-            Đóng
+            {t("Đóng")}
           </button>
         </div>
       </div>
@@ -104,11 +105,11 @@ export default function PlacesMapView({
     <div className="fixed inset-0 z-50 bg-paper flex flex-col">
       <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-b-[3px] border-ink paper-card shrink-0">
         <p className="font-display italic text-lg sm:text-xl text-ink">
-          Bản đồ địa điểm ({places.length})
+          {t("Bản đồ địa điểm")} ({places.length})
         </p>
         <button
           onClick={onClose}
-          aria-label="Đóng"
+          aria-label={t("Đóng")}
           className="p-1.5 rounded-full hover:bg-charcoal/10"
         >
           <X size={20} />
@@ -135,7 +136,7 @@ export default function PlacesMapView({
                 fillOpacity: 1,
               }}
             >
-              <Popup>Vị trí của bạn</Popup>
+              <Popup>{t("Vị trí của bạn")}</Popup>
             </CircleMarker>
           )}
 

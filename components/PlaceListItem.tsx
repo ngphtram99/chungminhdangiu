@@ -1,5 +1,6 @@
 "use client";
 
+import { t } from "@/lib/i18n";
 import { Place, STATUS_LABEL } from "@/lib/types";
 import { buildDirectionsLink } from "@/lib/maps";
 import { MapPin, Trash2, MapPinned, Check, Star } from "lucide-react";
@@ -48,7 +49,7 @@ export default function PlaceListItem({
     <div className="flex items-center gap-3 paper-card rounded-lg border-[3px] border-ink shadow-[4px_4px_0_0_#1A1A1A] p-2.5 sm:p-3 overflow-hidden">
       <button
         onClick={onEdit}
-        aria-label={`Sửa ${place.name}`}
+        aria-label={t("Sửa {name}", { name: place.name })}
         className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden shrink-0 bg-lilac border-2 border-ink flex items-center justify-center"
       >
         {thumb ? (
@@ -62,7 +63,7 @@ export default function PlaceListItem({
       <div className="min-w-0 flex-1">
         <button
           onClick={onEdit}
-          aria-label={`Sửa ${place.name}`}
+          aria-label={t("Sửa {name}", { name: place.name })}
           className="text-left w-full"
         >
           <h3 className="font-display text-sm sm:text-base font-semibold leading-snug truncate">
@@ -72,7 +73,7 @@ export default function PlaceListItem({
             <span
               className={`text-[10px] sm:text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_PILL[place.status]}`}
             >
-              {STATUS_LABEL[place.status]}
+              {t(STATUS_LABEL[place.status])}
             </span>
             {place.visited_date && (
               <span className="text-[10px] sm:text-xs text-charcoal/50 font-mono">
@@ -110,15 +111,15 @@ export default function PlaceListItem({
       <div className="flex flex-col items-end gap-1.5 shrink-0">
         {place.category && (
           <span className="text-[9px] sm:text-[10px] font-medium text-charcoal/50 bg-charcoal/5 px-1.5 py-0.5 rounded-full whitespace-nowrap">
-            {categoryIcon(place.category)} {place.category}
+            {categoryIcon(place.category)} {t(place.category)}
           </span>
         )}
         <div className="flex items-center gap-1">
           {onMarkVisited && (
             <button
               onClick={onMarkVisited}
-              aria-label={`Đánh dấu đã đi: ${place.name}`}
-              title="Đã đi rồi"
+              aria-label={t("Đánh dấu đã đi: {name}", { name: place.name })}
+              title={t("Đã đi rồi")}
               className="p-2 rounded-full hover:bg-sage/15 text-sage-dark"
             >
               <Check size={15} />
@@ -126,7 +127,7 @@ export default function PlaceListItem({
           )}
           <button
             onClick={onDelete}
-            aria-label={`Xoá ${place.name}`}
+            aria-label={t("Xoá {name}", { name: place.name })}
             className="p-2 rounded-full hover:bg-coral/10 text-coral"
           >
             <Trash2 size={15} />

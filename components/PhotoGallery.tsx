@@ -1,5 +1,6 @@
 "use client";
 
+import { t } from "@/lib/i18n";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { CouplePhoto, CoupleProfile } from "@/lib/types";
@@ -10,12 +11,12 @@ const UPLOADER_KEY = "couple-photos-uploader";
 function timeAgo(dateStr: string): string {
   const diffMs = Date.now() - new Date(dateStr).getTime();
   const diffMin = Math.floor(diffMs / 60000);
-  if (diffMin < 1) return "Vừa xong";
-  if (diffMin < 60) return `${diffMin} phút trước`;
+  if (diffMin < 1) return t("Vừa xong");
+  if (diffMin < 60) return t("{n} phút trước", { n: diffMin });
   const diffHour = Math.floor(diffMin / 60);
-  if (diffHour < 24) return `${diffHour} giờ trước`;
+  if (diffHour < 24) return t("{n} giờ trước", { n: diffHour });
   const diffDay = Math.floor(diffHour / 24);
-  return `${diffDay} ngày trước`;
+  return t("{n} ngày trước", { n: diffDay });
 }
 
 export default function PhotoGallery() {
@@ -137,7 +138,7 @@ export default function PhotoGallery() {
   }
 
   async function handleDelete(photo: CouplePhoto) {
-    if (!confirm("Xoá ảnh này?")) return;
+    if (!confirm(t("Xoá ảnh này?"))) return;
     await supabase.storage.from("couple-photos").remove([photo.storage_path]);
     const { error } = await supabase
       .from("couple_photos")
@@ -163,7 +164,7 @@ export default function PhotoGallery() {
     <div className="w-full mt-10 text-left">
       <div className="flex items-center justify-between mb-2.5 sm:mb-4">
         <h2 className="font-display italic text-lg sm:text-2xl text-ink">
-          Đang làm gì zạ?
+          {t("Đang làm gì zạ?")}
         </h2>
         <button
           onClick={handleUploadClick}
@@ -175,7 +176,7 @@ export default function PhotoGallery() {
           ) : (
             <Camera size={15} />
           )}
-          {uploading ? "Đang tải..." : "Đăng ảnh"}
+          {uploading ? t("Đang tải...") : t("Đăng ảnh")}
         </button>
         <input
           ref={fileInputRef}
@@ -187,7 +188,7 @@ export default function PhotoGallery() {
       </div>
 
       {loading ? (
-        <p className="text-charcoal/60 font-mono text-sm">Đang tải...</p>
+        <p className="text-charcoal/60 font-mono text-sm">{t("Đang tải...")}</p>
       ) : (
         <div className="grid grid-cols-2 gap-2 sm:gap-3">
           {cards.map((card) => {
@@ -205,7 +206,7 @@ export default function PhotoGallery() {
                     <button
                       onClick={() => handleDelete(photo)}
                       className="text-charcoal/40 hover:text-coral-dark transition-colors shrink-0"
-                      aria-label="Xoá ảnh"
+                      aria-label={t("Xoá ảnh")}
                     >
                       <Trash2 size={12} />
                     </button>
@@ -218,7 +219,7 @@ export default function PhotoGallery() {
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={photo.image_url}
-                        alt={`Ảnh mới nhất của ${card.name}`}
+                        alt={t("Ảnh mới nhất của {name}", { name: card.name })}
                         className="w-full h-full object-cover"
                       />
                     </div>
@@ -237,7 +238,7 @@ export default function PhotoGallery() {
                   <div className="h-24 sm:h-40 w-full flex flex-col items-center justify-center gap-1.5 text-charcoal/35">
                     <ImageOff size={18} />
                     <span className="text-[9px] sm:text-xs text-center px-2">
-                      Chưa có cập nhật
+                      {t("Chưa có cập nhật")}
                     </span>
                   </div>
                 )}
@@ -251,10 +252,10 @@ export default function PhotoGallery() {
         <div className="fixed inset-0 z-50 flex items-center justify-center px-6 bg-ink/40">
           <div className="paper-card rounded-2xl p-6 w-full max-w-xs text-center">
             <p className="font-display italic text-lg text-ink mb-1">
-              Bạn là ai vậy?
+              {t("Bạn là ai vậy?")}
             </p>
             <p className="text-xs text-charcoal/60 mb-5">
-              Chỉ hỏi 1 lần trên thiết bị này thôi nhé.
+              {t("Chỉ hỏi 1 lần trên thiết bị này thôi nhé.")}
             </p>
             <div className="flex flex-col gap-2.5">
               {[partner1, partner2].map((name) => (
@@ -271,7 +272,7 @@ export default function PhotoGallery() {
               onClick={() => setShowIdentityModal(false)}
               className="mt-4 text-xs text-charcoal/50 hover:text-ink transition-colors"
             >
-              Huỷ
+              {t("Huỷ")}
             </button>
           </div>
         </div>

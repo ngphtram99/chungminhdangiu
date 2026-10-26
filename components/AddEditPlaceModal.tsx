@@ -1,5 +1,6 @@
 "use client";
 
+import { t } from "@/lib/i18n";
 import { useEffect, useState } from "react";
 import { Place, PlaceStatus, STATUS_LABEL, CATEGORY_PRESETS } from "@/lib/types";
 import { supabase } from "@/lib/supabase";
@@ -95,7 +96,7 @@ export default function AddEditPlaceModal({
 
   function handleGetLocation() {
     if (!navigator.geolocation) {
-      setLocationError("Trình duyệt không hỗ trợ định vị.");
+      setLocationError(t("Trình duyệt không hỗ trợ định vị."));
       return;
     }
     setGettingLocation(true);
@@ -111,7 +112,7 @@ export default function AddEditPlaceModal({
       },
       () => {
         setLocationError(
-          "Không lấy được vị trí. Kiểm tra đã cho phép quyền định vị chưa."
+          t("Không lấy được vị trí. Kiểm tra đã cho phép quyền định vị chưa.")
         );
         setGettingLocation(false);
       },
@@ -142,7 +143,7 @@ export default function AddEditPlaceModal({
             photo_links: [...v.photo_links, data.publicUrl],
           }));
         } catch (err) {
-          setUploadError("Upload ảnh thất bại. Thử lại nhé.");
+          setUploadError(t("Upload ảnh thất bại. Thử lại nhé."));
           console.error(err);
         } finally {
           setPending((p) => p.filter((x) => x.id !== id));
@@ -195,11 +196,11 @@ export default function AddEditPlaceModal({
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-charcoal/10 sticky top-0 paper-card">
           <h2 className="font-display text-xl font-semibold">
-            {initial ? "Sửa địa điểm" : "Thêm địa điểm mới"}
+            {initial ? t("Sửa địa điểm") : t("Thêm địa điểm mới")}
           </h2>
           <button
             onClick={onClose}
-            aria-label="Đóng"
+            aria-label={t("Đóng")}
             className="p-1.5 rounded-full hover:bg-charcoal/10"
           >
             <X size={18} />
@@ -207,27 +208,27 @@ export default function AddEditPlaceModal({
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4">
-          <Field label="Tên địa điểm" required>
+          <Field label={t("Tên địa điểm")} required>
             <input
               value={values.name}
               onChange={(e) => setValues((v) => ({ ...v, name: e.target.value }))}
-              placeholder="Vd: Cafe Đắng, quận 1"
+              placeholder={t("Vd: Cafe Đắng, quận 1")}
               className="input"
               required
             />
           </Field>
 
-          <Field label="Địa chỉ" required>
+          <Field label={t("Địa chỉ")} required>
             <input
               value={values.address}
               onChange={(e) => setValues((v) => ({ ...v, address: e.target.value }))}
-              placeholder="Vd: 12 Lý Tự Trọng, Quận 1, TP.HCM"
+              placeholder={t("Vd: 12 Lý Tự Trọng, Quận 1, TP.HCM")}
               className="input"
               required
             />
           </Field>
 
-          <Field label="Quận / Tỉnh / Quốc gia">
+          <Field label={t("Quận / Tỉnh / Quốc gia")}>
             <select
               value={isCustomDistrict ? "__custom__" : values.district}
               onChange={(e) => {
@@ -241,26 +242,26 @@ export default function AddEditPlaceModal({
               }}
               className="input"
             >
-              <option value="">-- Chọn quận --</option>
+              <option value="">{t("-- Chọn quận --")}</option>
               {HCMC_DISTRICTS.map((d) => (
                 <option key={d} value={d}>
                   {d}
                 </option>
               ))}
-              <option value="__custom__">Khác (tự nhập)</option>
+              <option value="__custom__">{t("Khác (tự nhập)")}</option>
             </select>
             {isCustomDistrict && (
               <input
                 value={values.district}
                 onChange={(e) => setValues((v) => ({ ...v, district: e.target.value }))}
-                placeholder="Vd: Đà Lạt, Nha Trang, Nhật Bản..."
+                placeholder={t("Vd: Đà Lạt, Nha Trang, Nhật Bản...")}
                 className="input mt-2"
                 autoFocus
               />
             )}
           </Field>
 
-          <Field label="Link Google Maps (không bắt buộc)">
+          <Field label={t("Link Google Maps (không bắt buộc)")}>
             <input
               value={values.maps_link}
               onChange={(e) => setValues((v) => ({ ...v, maps_link: e.target.value }))}
@@ -269,7 +270,7 @@ export default function AddEditPlaceModal({
             />
           </Field>
 
-          <Field label="Vị trí (không bắt buộc)">
+          <Field label={t("Vị trí (không bắt buộc)")}>
             <button
               type="button"
               onClick={handleGetLocation}
@@ -278,10 +279,10 @@ export default function AddEditPlaceModal({
             >
               <Navigation size={15} />
               {gettingLocation
-                ? "Đang lấy vị trí..."
+                ? t("Đang lấy vị trí...")
                 : values.lat != null
-                ? "Đã lưu vị trí hiện tại ✓"
-                : "Lấy vị trí hiện tại (khi đang đứng ở địa điểm)"}
+                ? t("Đã lưu vị trí hiện tại ✓")
+                : t("Lấy vị trí hiện tại (khi đang đứng ở địa điểm)")}
             </button>
             {locationError && (
               <p className="text-xs text-coral-dark mt-1">{locationError}</p>
@@ -289,7 +290,7 @@ export default function AddEditPlaceModal({
           </Field>
 
           {!lockedStatus && (
-            <Field label="Trạng thái">
+            <Field label={t("Trạng thái")}>
               <div className="flex gap-2">
                 {(Object.keys(STATUS_LABEL) as PlaceStatus[]).map((s) => (
                   <button
@@ -302,14 +303,14 @@ export default function AddEditPlaceModal({
                         : "bg-transparent border-charcoal/20 text-charcoal/70 hover:border-ink"
                     }`}
                   >
-                    {STATUS_LABEL[s]}
+                    {t(STATUS_LABEL[s])}
                   </button>
                 ))}
               </div>
             </Field>
           )}
 
-          <Field label="Phân loại">
+          <Field label={t("Phân loại")}>
             <select
               value={isCustomCategory ? "__custom__" : values.category}
               onChange={(e) => {
@@ -323,18 +324,18 @@ export default function AddEditPlaceModal({
               }}
               className="input"
             >
-              <option value="">-- Chọn phân loại --</option>
-              <option value="Ăn uống">🍜 Ăn uống</option>
-              <option value="Cà phê">☕ Cà phê</option>
-              <option value="Giải trí">🎈 Giải trí</option>
-              <option value="Nhà thờ">⛪ Nhà thờ</option>
-              <option value="__custom__">Khác (tự nhập)</option>
+              <option value="">{t("-- Chọn phân loại --")}</option>
+              <option value="Ăn uống">🍜 {t("Ăn uống")}</option>
+              <option value="Cà phê">☕ {t("Cà phê")}</option>
+              <option value="Giải trí">🎈 {t("Giải trí")}</option>
+              <option value="Nhà thờ">⛪ {t("Nhà thờ")}</option>
+              <option value="__custom__">{t("Khác (tự nhập)")}</option>
             </select>
             {isCustomCategory && (
               <input
                 value={values.category}
                 onChange={(e) => setValues((v) => ({ ...v, category: e.target.value }))}
-                placeholder="Vd: Xem phim, Dạo phố, Mua sắm..."
+                placeholder={t("Vd: Xem phim, Dạo phố, Mua sắm...")}
                 className="input mt-2"
                 autoFocus
               />
@@ -343,7 +344,7 @@ export default function AddEditPlaceModal({
 
           {values.status === "visited" && (
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Ngày đã đi">
+              <Field label={t("Ngày đã đi")}>
                 <input
                   type="date"
                   value={values.visited_date}
@@ -353,7 +354,7 @@ export default function AddEditPlaceModal({
                   className="input"
                 />
               </Field>
-              <Field label="Đánh giá">
+              <Field label={t("Đánh giá")}>
                 <select
                   value={values.rating}
                   onChange={(e) =>
@@ -361,7 +362,7 @@ export default function AddEditPlaceModal({
                   }
                   className="input"
                 >
-                  <option value={0}>Chưa chấm</option>
+                  <option value={0}>{t("Chưa chấm")}</option>
                   {[1, 2, 3, 4, 5].map((n) => (
                     <option key={n} value={n}>
                       {"★".repeat(n)}
@@ -372,23 +373,23 @@ export default function AddEditPlaceModal({
             </div>
           )}
 
-          <Field label="Ghi chú">
+          <Field label={t("Ghi chú")}>
             <textarea
               value={values.notes}
               onChange={(e) => setValues((v) => ({ ...v, notes: e.target.value }))}
-              placeholder="Món ngon, kỷ niệm, lưu ý..."
+              placeholder={t("Món ngon, kỷ niệm, lưu ý...")}
               rows={3}
               className="input resize-none"
             />
           </Field>
 
-          <Field label="Ảnh mô tả địa điểm">
+          <Field label={t("Ảnh mô tả địa điểm")}>
             <label
               htmlFor="place-photo-upload"
               className="flex items-center justify-center gap-2 border border-dashed border-charcoal/25 rounded-lg py-3 text-sm text-charcoal/60 cursor-pointer hover:border-ink hover:text-ink transition-colors"
             >
               <Upload size={15} />
-              {"Chọn ảnh từ máy (chọn được nhiều ảnh)"}
+              {t("Chọn ảnh từ máy (chọn được nhiều ảnh)")}
               <input
                 id="place-photo-upload"
                 type="file"
@@ -421,7 +422,7 @@ export default function AddEditPlaceModal({
                         type="button"
                         onClick={() => setLightboxPhoto(link)}
                         className="w-full h-full block"
-                        aria-label="Phóng to ảnh"
+                        aria-label={t("Phóng to ảnh")}
                       >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={link} alt="" className="w-full h-full object-cover" />
@@ -429,7 +430,7 @@ export default function AddEditPlaceModal({
                       <button
                         type="button"
                         onClick={() => toggleSelectPhoto(i)}
-                        aria-label={isSel ? "Bỏ chọn ảnh" : "Chọn ảnh"}
+                        aria-label={isSel ? t("Bỏ chọn ảnh") : t("Chọn ảnh")}
                         className={`absolute top-1 right-1 w-5 h-5 rounded-full border-2 border-paper flex items-center justify-center text-[10px] leading-none text-paper ${
                           isSel ? "bg-coral" : "bg-ink/50"
                         }`}
@@ -455,18 +456,18 @@ export default function AddEditPlaceModal({
                     className="w-full text-left inline-flex items-center gap-1.5 text-charcoal/70 hover:text-ink text-xs font-medium mt-1"
                   >
                     <Trash2 size={13} />
-                    Bỏ {selectedPhotos.length} ảnh đã chọn
+                    {t("Bỏ {n} ảnh đã chọn", { n: selectedPhotos.length })}
                   </button>
                 )}
               </div>
             )}
           </Field>
 
-          <Field label="Người thêm (không bắt buộc)">
+          <Field label={t("Người thêm (không bắt buộc)")}>
             <input
               value={values.added_by}
               onChange={(e) => setValues((v) => ({ ...v, added_by: e.target.value }))}
-              placeholder="Vd: An hoặc Bình"
+              placeholder={t("Vd: An hoặc Bình")}
               className="input"
             />
           </Field>
@@ -476,7 +477,7 @@ export default function AddEditPlaceModal({
             disabled={saving || uploading}
             className="mt-2 w-full py-3 rounded-lg bg-coral hover:bg-coral-dark text-paper font-semibold transition-colors disabled:opacity-60"
           >
-            {saving ? "Đang lưu..." : uploading ? "Đang tải ảnh..." : initial ? "Lưu thay đổi" : "Thêm địa điểm"}
+            {saving ? t("Đang lưu...") : uploading ? t("Đang tải ảnh...") : initial ? t("Lưu thay đổi") : t("Thêm địa điểm")}
           </button>
         </form>
       </div>
@@ -496,11 +497,11 @@ export default function AddEditPlaceModal({
                 className="inline-flex items-center gap-1.5 bg-coral hover:bg-coral-dark text-paper text-xs sm:text-sm font-semibold px-3.5 py-2 rounded-full transition-colors"
               >
                 <Download size={14} />
-                Tải về
+                {t("Tải về")}
               </a>
               <button
                 onClick={() => setLightboxPhoto(null)}
-                aria-label="Đóng"
+                aria-label={t("Đóng")}
                 className="p-2 rounded-full bg-paper/90 hover:bg-paper text-ink transition-colors"
               >
                 <X size={18} />
@@ -509,7 +510,7 @@ export default function AddEditPlaceModal({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={lightboxPhoto}
-              alt="Ảnh địa điểm"
+              alt={t("Ảnh địa điểm")}
               className="w-full max-h-[75vh] object-contain rounded-xl border-[3px] border-paper"
             />
           </div>

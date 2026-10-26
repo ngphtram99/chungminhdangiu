@@ -1,5 +1,6 @@
 "use client";
 
+import { t } from "@/lib/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { CalendarNote } from "@/lib/types";
@@ -13,6 +14,7 @@ import {
   Clock,
   Upload,
   Download,
+  Loader2,
 } from "lucide-react";
 
 const MONTH_NAMES = [
@@ -51,7 +53,9 @@ export default function CalendarPage() {
   const [recentNotes, setRecentNotes] = useState<CalendarNote[]>([]);
   const [recentVisible, setRecentVisible] = useState(3);
   const [draftPhotos, setDraftPhotos] = useState<string[]>([]);
-  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  // Ảnh đang tải lên: hiện bản xem trước mờ + vòng xoay (giống phần địa điểm)
+  const [pendingPhotos, setPendingPhotos] = useState<{ id: string; preview: string }[]>([]);
+  const uploadingPhoto = pendingPhotos.length > 0;
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [lightboxPhoto, setLightboxPhoto] = useState<{ url: string; name: string } | null>(null);
   const [selectedPhotos, setSelectedPhotos] = useState<number[]>([]);
@@ -150,25 +154,28 @@ export default function CalendarPage() {
   }
 
   async function handleUploadNotePhotos(files: FileList) {
-    setUploadingPhoto(true);
     setUploadError(null);
-    try {
-      const uploaded: string[] = [];
-      for (const file of Array.from(files)) {
-        const ext = file.name.split(".").pop();
-        const path = `note-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-        const { error } = await supabase.storage.from("place-photos").upload(path, file);
-        if (error) throw error;
-        const { data } = supabase.storage.from("place-photos").getPublicUrl(path);
-        uploaded.push(data.publicUrl);
-      }
-      setDraftPhotos((prev) => [...prev, ...uploaded]);
-    } catch (err) {
-      setUploadError("Upload ảnh thất bại, thử lại nhé.");
-      console.error(err);
-    } finally {
-      setUploadingPhoto(false);
-    }
+    await Promise.all(
+      Array.from(files).map(async (file) => {
+        const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        const preview = URL.createObjectURL(file);
+        setPendingPhotos((p) => [...p, { id, preview }]);
+        try {
+          const ext = file.name.split(".").pop();
+          const path = `note-${id}.${ext}`;
+          const { error } = await supabase.storage.from("place-photos").upload(path, file);
+          if (error) throw error;
+          const { data } = supabase.storage.from("place-photos").getPublicUrl(path);
+          setDraftPhotos((prev) => [...prev, data.publicUrl]);
+        } catch (err) {
+          setUploadError(t("Upload ảnh thất bại, thử lại nhé."));
+          console.error(err);
+        } finally {
+          setPendingPhotos((p) => p.filter((x) => x.id !== id));
+          URL.revokeObjectURL(preview);
+        }
+      })
+    );
   }
 
   function toggleSelectPhoto(idx: number) {
@@ -233,7 +240,7 @@ export default function CalendarPage() {
     Object.entries(notes).forEach(([d, n]) => {
       (n?.photo_links || []).forEach((url) => {
         if (!merged[d]) merged[d] = [];
-        merged[d].push({ url, name: "Ghi chú" });
+        merged[d].push({ url, name: t("Ghi chú") });
       });
     });
     return merged;
@@ -266,7 +273,7 @@ export default function CalendarPage() {
         <button
           onClick={view === "year" ? () => setYear((y) => y - 1) : goPrevMonth}
           className="p-2 rounded-full hover:bg-charcoal/10 text-charcoal/60 hover:text-ink transition-colors"
-          aria-label="Trước"
+          aria-label={t("Trước")}
         >
           <ChevronLeft size={18} />
         </button>
@@ -275,7 +282,7 @@ export default function CalendarPage() {
           <h1 className="font-display italic text-2xl sm:text-4xl font-semibold text-ink text-center">
             {view === "year"
               ? `${year}`
-              : `${MONTH_NAMES[activeMonth]} ${year}`}
+              : `${t(MONTH_NAMES[activeMonth])} ${year}`}
           </h1>
           <button
             onClick={() => setView(view === "year" ? "month" : "year")}
@@ -284,12 +291,12 @@ export default function CalendarPage() {
             {view === "year" ? (
               <>
                 <ZoomIn size={13} />
-                Xem theo tháng
+                {t("Xem theo tháng")}
               </>
             ) : (
               <>
                 <ZoomOut size={13} />
-                Xem cả năm
+                {t("Xem cả năm")}
               </>
             )}
           </button>
@@ -309,7 +316,7 @@ export default function CalendarPage() {
           <div className="flex items-center gap-1.5 mb-1.5">
             <Clock size={14} className="text-coral-dark" />
             <p className="text-xs sm:text-sm font-semibold text-ink">
-              Ghi chú gần đây
+              {t("Ghi chú gần đây")}
             </p>
           </div>
           <div className="flex flex-col gap-1">
@@ -323,7 +330,7 @@ export default function CalendarPage() {
                   {n.note_date.split("-").reverse().join("/")}
                 </span>
                 <span className="flex-1 min-w-0 truncate text-sm sm:text-base text-charcoal">
-                  {n.content || "Ảnh"}
+                  {n.content || t("Ảnh")}
                 </span>
                 {n.photo_links && n.photo_links.length > 0 && (
                   <span className="shrink-0 flex items-center">
@@ -354,7 +361,7 @@ export default function CalendarPage() {
                     onClick={() => setRecentVisible((v) => v + 10)}
                     className="text-xs font-mono text-coral-dark hover:text-coral transition-colors"
                   >
-                    Xem thêm ({Math.min(10, recentNotes.length - recentVisible)})
+                    {t("Xem thêm")} ({Math.min(10, recentNotes.length - recentVisible)})
                   </button>
                 )}
                 {recentVisible > 3 && (
@@ -363,7 +370,7 @@ export default function CalendarPage() {
                     onClick={() => setRecentVisible(3)}
                     className="text-xs font-mono text-charcoal/60 hover:text-ink transition-colors"
                   >
-                    Thu gọn
+                    {t("Thu gọn")}
                   </button>
                 )}
               </div>
@@ -373,7 +380,7 @@ export default function CalendarPage() {
       )}
 
       {loading ? (
-        <p className="text-charcoal/60 font-mono text-sm text-center">Đang tải...</p>
+        <p className="text-charcoal/60 font-mono text-sm text-center">{t("Đang tải...")}</p>
       ) : view === "year" ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 pb-6">
           {months.map((m) => {
@@ -385,7 +392,7 @@ export default function CalendarPage() {
                   className="w-full flex items-center justify-center gap-1.5 mb-2 group"
                 >
                   <p className="font-display italic text-sm sm:text-base text-ink group-hover:text-coral-dark transition-colors">
-                    {MONTH_NAMES[m]}
+                    {t(MONTH_NAMES[m])}
                   </p>
                   <ZoomIn
                     size={11}
@@ -398,7 +405,7 @@ export default function CalendarPage() {
                       key={w}
                       className="text-[8px] sm:text-[10px] text-charcoal/40 font-mono"
                     >
-                      {w}
+                      {t(w)}
                     </span>
                   ))}
                   {cells.map((d, idx) => {
@@ -443,7 +450,7 @@ export default function CalendarPage() {
                 key={w}
                 className="text-xs sm:text-sm text-charcoal/40 font-mono font-medium"
               >
-                {w}
+                {t(w)}
               </span>
             ))}
           </div>
@@ -510,7 +517,7 @@ export default function CalendarPage() {
               <button
                 onClick={() => setSelectedDate(null)}
                 className="text-charcoal/50 hover:text-ink transition-colors"
-                aria-label="Đóng"
+                aria-label={t("Đóng")}
               >
                 <X size={18} />
               </button>
@@ -518,7 +525,7 @@ export default function CalendarPage() {
             <textarea
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              placeholder="Ghi chú cho ngày này..."
+              placeholder={t("Ghi chú cho ngày này...")}
               rows={4}
               className="w-full rounded-xl border border-charcoal/15 bg-paper px-3 py-2.5 text-sm text-charcoal focus:outline-none focus:border-coral resize-none"
             />
@@ -528,8 +535,12 @@ export default function CalendarPage() {
                 htmlFor="note-photo-upload"
                 className="flex items-center justify-center gap-2 border border-dashed border-charcoal/25 rounded-lg py-2.5 text-xs sm:text-sm text-charcoal/60 cursor-pointer hover:border-coral hover:text-coral-dark transition-colors"
               >
-                <Upload size={14} />
-                {uploadingPhoto ? "Đang tải ảnh lên..." : "Thêm ảnh cho ngày này"}
+                {uploadingPhoto ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : (
+                  <Upload size={14} />
+                )}
+                {uploadingPhoto ? t("Đang tải ảnh lên...") : t("Thêm ảnh cho ngày này")}
                 <input
                   id="note-photo-upload"
                   type="file"
@@ -548,7 +559,7 @@ export default function CalendarPage() {
               {uploadError && (
                 <p className="text-xs text-coral-dark mt-1">{uploadError}</p>
               )}
-              {draftPhotos.length > 0 && (
+              {(draftPhotos.length > 0 || pendingPhotos.length > 0) && (
                 <div className="mt-2 flex flex-wrap gap-2">
                   {draftPhotos.map((link, i) => {
                     const isSel = selectedPhotos.includes(i);
@@ -561,9 +572,9 @@ export default function CalendarPage() {
                       >
                         <button
                           type="button"
-                          onClick={() => setLightboxPhoto({ url: link, name: "Ảnh ghi chú" })}
+                          onClick={() => setLightboxPhoto({ url: link, name: t("Ảnh ghi chú") })}
                           className="w-full h-full block"
-                          aria-label="Phóng to ảnh"
+                          aria-label={t("Phóng to ảnh")}
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={link} alt="" className="w-full h-full object-cover" />
@@ -571,7 +582,7 @@ export default function CalendarPage() {
                         <button
                           type="button"
                           onClick={() => toggleSelectPhoto(i)}
-                          aria-label={isSel ? "Bỏ chọn ảnh" : "Chọn ảnh"}
+                          aria-label={isSel ? t("Bỏ chọn ảnh") : t("Chọn ảnh")}
                           className={`absolute top-1 right-1 w-5 h-5 rounded-full border-2 border-paper flex items-center justify-center text-[10px] leading-none text-paper ${
                             isSel ? "bg-coral" : "bg-ink/50"
                           }`}
@@ -581,6 +592,15 @@ export default function CalendarPage() {
                       </div>
                     );
                   })}
+                  {pendingPhotos.map((p) => (
+                    <div key={p.id} className="relative w-16 h-16 rounded-lg overflow-hidden">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={p.preview} alt="" className="w-full h-full object-cover opacity-50" />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-5 h-5 border-2 border-paper border-t-transparent rounded-full animate-spin" />
+                      </div>
+                    </div>
+                  ))}
                   {selectedPhotos.length > 0 && (
                     <button
                       type="button"
@@ -588,7 +608,7 @@ export default function CalendarPage() {
                       className="w-full text-left inline-flex items-center gap-1.5 text-charcoal/70 hover:text-ink text-xs font-medium mt-1"
                     >
                       <X size={13} />
-                      Bỏ {selectedPhotos.length} ảnh đã chọn khỏi ghi chú
+                      {t("Bỏ {n} ảnh đã chọn khỏi ghi chú", { n: selectedPhotos.length })}
                     </button>
                   )}
                 </div>
@@ -598,7 +618,7 @@ export default function CalendarPage() {
             {selectedDate && placePhotosByDate[selectedDate] && placePhotosByDate[selectedDate].length > 0 && (
               <div className="mt-4">
                 <p className="text-xs text-charcoal/50 font-mono mb-2">
-                  Quán đã đi hôm đó:
+                  {t("Quán đã đi hôm đó:")}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {placePhotosByDate[selectedDate].map((p, i) => (
@@ -634,17 +654,17 @@ export default function CalendarPage() {
                   className="inline-flex items-center gap-1.5 text-coral-dark hover:text-coral text-sm font-medium transition-colors disabled:opacity-50"
                 >
                   <Trash2 size={14} />
-                  Xoá ghi chú
+                  {t("Xoá ghi chú")}
                 </button>
               ) : (
                 <span />
               )}
               <button
                 onClick={saveNote}
-                disabled={saving}
+                disabled={saving || uploadingPhoto}
                 className="bg-coral hover:bg-coral-dark text-paper text-sm font-semibold px-5 py-2 rounded-lg border-2 border-ink shadow-[3px_3px_0_0_#1A1A1A] transition-colors disabled:opacity-60"
               >
-                {saving ? "Đang lưu..." : "Lưu"}
+                {saving ? t("Đang lưu...") : uploadingPhoto ? t("Đang tải ảnh...") : t("Lưu")}
               </button>
             </div>
           </div>
@@ -669,11 +689,11 @@ export default function CalendarPage() {
                 className="inline-flex items-center gap-1.5 bg-coral hover:bg-coral-dark text-paper text-xs sm:text-sm font-semibold px-3.5 py-2 rounded-full transition-colors"
               >
                 <Download size={14} />
-                Tải về
+                {t("Tải về")}
               </a>
               <button
                 onClick={() => setLightboxPhoto(null)}
-                aria-label="Đóng"
+                aria-label={t("Đóng")}
                 className="p-2 rounded-full bg-paper/90 hover:bg-paper text-ink transition-colors"
               >
                 <X size={18} />

@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import { PlaceStatus, STATUS_LABEL } from "@/lib/types";
 
 const RING_COLOR: Record<PlaceStatus, string> = {
@@ -13,7 +14,7 @@ export default function StampBadge({ status }: { status: PlaceStatus }) {
       aria-hidden="true"
     >
       <span className="font-mono text-[9px] tracking-widest leading-tight text-center px-1">
-        {STATUS_LABEL[status]}
+        {t(STATUS_LABEL[status])}
       </span>
     </div>
   );

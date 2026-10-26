@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Fraunces, Inter, Space_Mono, VT323 } from "next/font/google";
 import "./globals.css";
 import CategoryNav from "@/components/CategoryNav";
+import LanguageProvider from "@/components/LanguageProvider";
 
 const fraunces = Fraunces({
   subsets: ["latin", "vietnamese"],
@@ -72,8 +73,10 @@ export default function RootLayout({
           className="fixed inset-0 -z-10 bg-[url('/couple-mascot.jpg')] bg-center bg-no-repeat bg-contain opacity-[0.18] pointer-events-none"
           aria-hidden="true"
         />
-        <div className="content-safe-bottom">{children}</div>
-        <CategoryNav />
+        <LanguageProvider>
+          <div className="content-safe-bottom">{children}</div>
+          <CategoryNav />
+        </LanguageProvider>
       </body>
     </html>
   );

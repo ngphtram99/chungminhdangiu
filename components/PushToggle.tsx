@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { t } from "@/lib/i18n";
+import { useLanguage } from "@/components/LanguageProvider";
 import { Bell, BellOff, Check } from "lucide-react";
 
 type Who = "partner1" | "partner2";
@@ -15,9 +17,10 @@ function urlBase64ToUint8Array(base64: string) {
 }
 
 export default function PushToggle() {
+  const { lang } = useLanguage();
   const [supported, setSupported] = useState(true);
   const [needInstall, setNeedInstall] = useState(false);
-  const [names, setNames] = useState({ partner1: "Người 1", partner2: "Người 2" });
+  const [names, setNames] = useState({ partner1: t("Người 1"), partner2: t("Người 2") });
   const [who, setWho] = useState<Who | null>(null);
   const [enabled, setEnabled] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -49,6 +52,23 @@ export default function PushToggle() {
       .catch(() => {});
   }, []);
 
+  // Khi đổi ngôn ngữ, cập nhật lại ngôn ngữ nhận thông báo của máy này
+  useEffect(() => {
+    if (!enabled || !who) return;
+    navigator.serviceWorker
+      .getRegistration()
+      .then((reg) => reg?.pushManager.getSubscription())
+      .then((sub) => {
+        if (!sub) return;
+        return fetch("/api/push/subscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ who, subscription: sub.toJSON(), lang }),
+        });
+      })
+      .catch(() => {});
+  }, [lang, enabled, who]);
+
   function chooseWho(w: Who) {
     setWho(w);
     localStorage.setItem("push_who", w);
@@ -56,7 +76,7 @@ export default function PushToggle() {
 
   async function enable() {
     if (!who) {
-      setMsg("Chọn trước xem bạn là ai nhé.");
+      setMsg(t("Chọn trước xem bạn là ai nhé."));
       return;
     }
     setBusy(true);
@@ -64,7 +84,7 @@ export default function PushToggle() {
     try {
       const perm = await Notification.requestPermission();
       if (perm !== "granted") {
-        setMsg("Bạn chưa cho phép thông báo. Hãy bật trong cài đặt của trình duyệt/điện thoại.");
+        setMsg(t("Bạn chưa cho phép thông báo. Hãy bật trong cài đặt của trình duyệt/điện thoại."));
         return;
       }
       const reg = await navigator.serviceWorker.register("/sw.js");
@@ -80,13 +100,13 @@ export default function PushToggle() {
       const res = await fetch("/api/push/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ who, subscription: sub.toJSON() }),
+        body: JSON.stringify({ who, subscription: sub.toJSON(), lang }),
       });
-      if (!res.ok) throw new Error("Lưu thất bại");
+      if (!res.ok) throw new Error(t("Lưu thất bại"));
       setEnabled(true);
-      setMsg("Đã bật thông báo ✓");
+      setMsg(t("Đã bật thông báo ✓"));
     } catch (e) {
-      setMsg("Không bật được thông báo. Thử lại giúp mình nhé.");
+      setMsg(t("Không bật được thông báo. Thử lại giúp mình nhé."));
     } finally {
       setBusy(false);
     }
@@ -107,7 +127,7 @@ export default function PushToggle() {
         await sub.unsubscribe();
       }
       setEnabled(false);
-      setMsg("Đã tắt thông báo.");
+      setMsg(t("Đã tắt thông báo."));
     } finally {
       setBusy(false);
     }
@@ -124,18 +144,18 @@ export default function PushToggle() {
     <section className="paper-card rounded-xl border-[3px] border-ink shadow-[4px_4px_0_0_#1A1A1A] p-5 sm:p-7 mt-5 sm:mt-6">
       <div className="flex items-center gap-2 mb-4">
         <Bell size={18} className="text-coral-dark" />
-        <h2 className="font-display italic text-lg sm:text-xl text-ink">Thông báo</h2>
+        <h2 className="font-display italic text-lg sm:text-xl text-ink">{t("Thông báo")}</h2>
       </div>
 
       {!supported ? (
         <p className="text-sm text-charcoal/70">
           {needInstall
-            ? "Trên iPhone, hãy bấm nút Chia sẻ của Safari → \"Thêm vào Màn hình chính\", rồi mở web từ icon đó để bật thông báo (cần iOS 16.4 trở lên)."
-            : "Trình duyệt này chưa hỗ trợ thông báo đẩy."}
+            ? t("Trên iPhone, hãy bấm nút Chia sẻ của Safari → “Thêm vào Màn hình chính”, rồi mở web từ icon đó để bật thông báo (cần iOS 16.4 trở lên).")
+            : t("Trình duyệt này chưa hỗ trợ thông báo đẩy.")}
         </p>
       ) : (
         <>
-          <p className="text-sm text-charcoal/70 mb-3">Máy này là của ai?</p>
+          <p className="text-sm text-charcoal/70 mb-3">{t("Máy này là của ai?")}</p>
           <div className="grid grid-cols-2 gap-3 mb-4">
             <button
               disabled={enabled}
@@ -158,12 +178,12 @@ export default function PushToggle() {
           {enabled ? (
             <button disabled={busy} onClick={disable} className={btn(false) + " w-full"}>
               <BellOff size={16} />
-              Tắt thông báo trên máy này
+              {t("Tắt thông báo trên máy này")}
             </button>
           ) : (
             <button disabled={busy} onClick={enable} className={btn(true) + " w-full"}>
               <Bell size={16} />
-              Bật thông báo
+              {t("Bật thông báo")}
             </button>
           )}
         </>

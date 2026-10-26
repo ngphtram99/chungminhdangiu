@@ -1,5 +1,6 @@
 "use client";
 
+import { t } from "@/lib/i18n";
 import { Place, CATEGORY_PRESETS } from "@/lib/types";
 
 export type CategoryFilterValue = string; // "all" hoặc đúng tên phân loại
@@ -41,8 +42,8 @@ export default function CategoryFilter({
   places: Place[];
 }) {
   const chips: { value: CategoryFilterValue; label: string }[] = [
-    { value: "all", label: "Tất cả" },
-    ...CATEGORY_PRESETS.map((c) => ({ value: c, label: `${PRESET_ICON[c] || ""} ${c}` })),
+    { value: "all", label: t("Tất cả") },
+    ...CATEGORY_PRESETS.map((c) => ({ value: c, label: `${PRESET_ICON[c] || ""} ${t(c)}` })),
     ...extraCategories.map((c) => ({ value: c, label: `📍 ${c}` })),
   ];
 

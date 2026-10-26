@@ -12,26 +12,43 @@ type Payload = {
   who?: string | null;
 };
 
+type Lang = "vi" | "en";
+type Text = { vi: string; en: string };
+
 function describe(table: string, type: string, r: Record<string, any>) {
   const isNew = type === "INSERT";
   if (table === "places") {
+    const body = r.name || "";
     return {
-      title: isNew ? "Địa điểm mới 📍" : "Địa điểm vừa được sửa ✏️",
-      body: r.name || "",
+      title: {
+        vi: isNew ? "Địa điểm mới 📍" : "Địa điểm vừa được sửa ✏️",
+        en: isNew ? "New place 📍" : "Place updated ✏️",
+      } as Text,
+      body: { vi: body, en: body } as Text,
       author: r.added_by,
     };
   }
   if (table === "calendar_notes") {
+    const body = `${r.note_date || ""}: ${String(r.content || "").slice(0, 80)}`;
     return {
-      title: isNew ? "Ghi chú lịch mới 📅" : "Ghi chú lịch vừa được sửa ✏️",
-      body: `${r.note_date || ""}: ${String(r.content || "").slice(0, 80)}`,
+      title: {
+        vi: isNew ? "Ghi chú lịch mới 📅" : "Ghi chú lịch vừa được sửa ✏️",
+        en: isNew ? "New calendar note 📅" : "Calendar note updated ✏️",
+      } as Text,
+      body: { vi: body, en: body } as Text,
       author: r.created_by,
     };
   }
   if (table === "couple_photos") {
     return {
-      title: isNew ? "Ảnh mới 📷" : "Ảnh vừa được sửa ✏️",
-      body: r.caption || "Có ảnh mới trong album",
+      title: {
+        vi: isNew ? "Ảnh mới 📷" : "Ảnh vừa được sửa ✏️",
+        en: isNew ? "New photo 📷" : "Photo updated ✏️",
+      } as Text,
+      body: {
+        vi: r.caption || "Có ảnh mới trong album",
+        en: r.caption || "There's a new photo in the album",
+      } as Text,
       author: r.uploaded_by,
     };
   }
@@ -89,11 +106,12 @@ export async function POST(req: Request) {
     process.env.VAPID_PRIVATE_KEY!
   );
 
-  const message = JSON.stringify({
-    title: info.title,
-    body: info.body,
-    url: "/",
-  });
+  const messageFor = (lang: Lang) =>
+    JSON.stringify({
+      title: info.title[lang],
+      body: info.body[lang],
+      url: "/",
+    });
 
   let sent = 0;
   await Promise.all(
@@ -101,7 +119,7 @@ export async function POST(req: Request) {
       try {
         await webpush.sendNotification(
           { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
-          message
+          messageFor(s.lang === "en" ? "en" : "vi")
         );
         sent++;
       } catch (err: any) {

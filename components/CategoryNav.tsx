@@ -1,5 +1,6 @@
 "use client";
 
+import { t } from "@/lib/i18n";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -59,11 +60,11 @@ export default function CategoryNav() {
                 }`}
               />
               <span className="text-[9px] sm:text-xs font-medium leading-tight text-center">
-                {cat.label}
+                {t(cat.label)}
               </span>
               {!cat.ready && (
                 <span className="text-[7px] sm:text-[10px] font-mono text-charcoal/40 leading-none">
-                  Sắp có
+                  {t("Sắp có")}
                 </span>
               )}
             </div>

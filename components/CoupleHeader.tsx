@@ -1,5 +1,6 @@
 "use client";
 
+import { t, locale } from "@/lib/i18n";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { CoupleProfile } from "@/lib/types";
@@ -46,7 +47,7 @@ export default function CoupleHeader() {
     <div className="paper-card rounded-xl border-[3px] border-ink shadow-[5px_5px_0_0_#1A1A1A] px-4 sm:px-8 py-5 sm:py-7 mb-5 sm:mb-8 flex flex-col items-center gap-4 sm:gap-5 w-full relative">
       <button
         onClick={() => setModalOpen(true)}
-        aria-label="Sửa hồ sơ hai người"
+        aria-label={t("Sửa hồ sơ hai người")}
         className="absolute top-2.5 right-2.5 p-1.5 rounded-md hover:bg-charcoal/10 text-charcoal/60 hover:text-ink transition-colors"
       >
         <Pencil size={15} />
@@ -54,7 +55,7 @@ export default function CoupleHeader() {
 
       <div className="flex items-center justify-center gap-2 sm:gap-4">
         <Avatar
-          name={profile?.partner1_name || "Bạn"}
+          name={t(profile?.partner1_name || "Bạn")}
           url={profile?.partner1_avatar_url}
           ringClass="ring-coral"
         />
@@ -64,7 +65,7 @@ export default function CoupleHeader() {
           className="fill-coral text-coral shrink-0 hidden sm:block"
         />
         <Avatar
-          name={profile?.partner2_name || "Người yêu"}
+          name={t(profile?.partner2_name || "Người yêu")}
           url={profile?.partner2_avatar_url}
           ringClass="ring-ink"
         />
@@ -74,15 +75,15 @@ export default function CoupleHeader() {
         {days !== null ? (
           <>
             <span className="font-display text-2xl sm:text-4xl font-semibold text-ink leading-none">
-              {days.toLocaleString("vi-VN")}
+              {days.toLocaleString(locale())}
             </span>
             <span className="text-[10px] sm:text-xs text-charcoal/60 font-mono tracking-wide mt-1">
-              ngày bên nhau
+              {t("ngày bên nhau")}
             </span>
           </>
         ) : (
           <span className="text-xs text-charcoal/50 text-center">
-            Chưa có ngày kỷ niệm
+            {t("Chưa có ngày kỷ niệm")}
           </span>
         )}
       </div>

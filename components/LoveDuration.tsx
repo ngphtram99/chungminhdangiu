@@ -1,5 +1,6 @@
 "use client";
 
+import { t } from "@/lib/i18n";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { CoupleProfile } from "@/lib/types";
@@ -60,10 +61,10 @@ export default function LoveDuration() {
   );
 
   const units = [
-    { value: years, label: "Năm" },
-    { value: months, label: "Tháng" },
-    { value: weeks, label: "Tuần" },
-    { value: days, label: "Ngày" },
+    { value: years, label: t("Năm") },
+    { value: months, label: t("Tháng") },
+    { value: weeks, label: t("Tuần") },
+    { value: days, label: t("Ngày") },
   ];
 
   return (

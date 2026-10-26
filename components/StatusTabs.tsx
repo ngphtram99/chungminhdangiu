@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import { PlaceStatus, STATUS_LABEL } from "@/lib/types";
 
 type TabValue = PlaceStatus | "all";
@@ -32,7 +33,7 @@ export default function StatusTabs({
                 : "bg-paper/50 text-charcoal/70 border-charcoal/15 hover:border-ink hover:text-ink"
             }`}
           >
-            {tab.label}
+            {t(tab.label)}
             <span className="ml-1.5 font-mono text-xs opacity-70">
               {counts[tab.value] ?? 0}
             </span>

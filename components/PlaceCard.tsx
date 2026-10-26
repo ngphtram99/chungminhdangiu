@@ -1,5 +1,6 @@
 "use client";
 
+import { t, locale } from "@/lib/i18n";
 import { Place } from "@/lib/types";
 import { buildEmbedUrl, buildDirectionsLink } from "@/lib/maps";
 import StampBadge from "./StampBadge";
@@ -27,12 +28,12 @@ export default function PlaceCard({
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={heroPhoto}
-            alt={`Ảnh ${place.name}`}
+            alt={t("Ảnh {name}", { name: place.name })}
             className="w-full h-full object-cover"
           />
         ) : (
           <iframe
-            title={`Bản đồ ${place.name}`}
+            title={t("Bản đồ {name}", { name: place.name })}
             src={buildEmbedUrl(place.name, place.address)}
             loading="lazy"
             className="w-full h-full border-0"
@@ -62,7 +63,7 @@ export default function PlaceCard({
           <div className="flex items-center gap-3 text-xs sm:text-sm text-charcoal/80">
             {place.visited_date && (
               <span className="font-mono">
-                {new Date(place.visited_date).toLocaleDateString("vi-VN")}
+                {new Date(place.visited_date).toLocaleDateString(locale())}
               </span>
             )}
             {place.rating && (
@@ -92,7 +93,7 @@ export default function PlaceCard({
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={link}
-                  alt={`Ảnh ${place.name} ${i + 2}`}
+                  alt={t("Ảnh {name} {n}", { name: place.name, n: i + 2 })}
                   className="w-full h-full object-cover"
                 />
               </a>
@@ -102,19 +103,19 @@ export default function PlaceCard({
 
         <div className="mt-auto pt-2 flex items-center justify-between gap-2 border-t border-charcoal/10">
           <a href={directionsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs font-medium text-ink hover:text-coral transition-colors">
-            Xem trên Maps <ExternalLink size={12} />
+            {t("Xem trên Maps")} <ExternalLink size={12} />
           </a>
           <div className="flex items-center gap-1">
             <button
               onClick={onEdit}
-              aria-label={`Sửa ${place.name}`}
+              aria-label={t("Sửa {name}", { name: place.name })}
               className="p-2 rounded-full hover:bg-ink/10 text-ink transition-colors"
             >
               <Pencil size={15} />
             </button>
             <button
               onClick={onDelete}
-              aria-label={`Xoá ${place.name}`}
+              aria-label={t("Xoá {name}", { name: place.name })}
               className="p-2 rounded-full hover:bg-coral/10 text-coral transition-colors"
             >
               <Trash2 size={15} />

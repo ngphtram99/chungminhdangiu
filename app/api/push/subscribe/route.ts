@@ -27,7 +27,7 @@ export async function GET() {
 
 // Lưu địa chỉ nhận thông báo của 1 thiết bị
 export async function POST(req: Request) {
-  const { who, subscription } = await req.json();
+  const { who, subscription, lang } = await req.json();
   if (
     (who !== "partner1" && who !== "partner2") ||
     !subscription?.endpoint ||
@@ -44,6 +44,7 @@ export async function POST(req: Request) {
         endpoint: subscription.endpoint,
         p256dh: subscription.keys.p256dh,
         auth: subscription.keys.auth,
+        lang: lang === "en" ? "en" : "vi",
       },
       { onConflict: "endpoint" }
     );
