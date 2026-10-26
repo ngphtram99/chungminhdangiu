@@ -9,6 +9,7 @@ type Payload = {
   type: "INSERT" | "UPDATE" | "DELETE";
   table: string;
   record: Record<string, any> | null;
+  who?: string | null;
 };
 
 function describe(table: string, type: string, r: Record<string, any>) {
@@ -65,7 +66,11 @@ export async function POST(req: Request) {
   const norm = (s: unknown) => String(s ?? "").trim().toLowerCase();
   const author = norm(info.author);
   let authorWho: "partner1" | "partner2" | null = null;
-  if (author && profile) {
+  // Ưu tiên: thiết bị tự gửi kèm "máy này là của ai" (header x-push-who)
+  if (payload.who === "partner1" || payload.who === "partner2") {
+    authorWho = payload.who;
+  } else if (author && profile) {
+    // Dự phòng: đoán qua tên ở cột added_by / created_by / uploaded_by
     if (author === norm(profile.partner1_name)) authorWho = "partner1";
     else if (author === norm(profile.partner2_name)) authorWho = "partner2";
   }
