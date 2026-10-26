@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Sun, Moon, Languages, Check } from "lucide-react";
+import PushToggle from "@/components/PushToggle";
 
 type Theme = "light" | "dark";
 type Language = "vi" | "en";
@@ -112,6 +113,7 @@ export default function SettingsPage() {
           Hiện chỉ lưu lựa chọn — nội dung các trang sẽ được dịch dần ở bản cập nhật sau.
         </p>
       </section>
+      <PushToggle />
     </main>
   );
 }
