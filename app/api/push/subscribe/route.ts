@@ -17,6 +17,7 @@ export async function GET() {
   const { data } = await admin()
     .from("couple_profile")
     .select("partner1_name, partner2_name")
+    .order("updated_at", { ascending: false })
     .limit(1)
     .maybeSingle();
   return NextResponse.json({

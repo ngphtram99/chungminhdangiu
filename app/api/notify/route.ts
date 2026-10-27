@@ -77,6 +77,7 @@ export async function POST(req: Request) {
   const { data: profile } = await db
     .from("couple_profile")
     .select("partner1_name, partner2_name")
+    .order("updated_at", { ascending: false })
     .limit(1)
     .maybeSingle();
 

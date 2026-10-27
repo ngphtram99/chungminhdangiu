@@ -26,6 +26,7 @@ export default function LegoPreviewPage() {
     const { data } = await supabase
       .from("couple_profile")
       .select("*")
+      .order("updated_at", { ascending: false })
       .limit(1)
       .maybeSingle();
     if (data) setProfile(data as CoupleProfile);

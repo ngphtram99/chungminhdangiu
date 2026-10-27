@@ -31,6 +31,7 @@ export function loadProfile(): Promise<CoupleProfile | null> {
       const { data, error } = await supabase
         .from("couple_profile")
         .select("*")
+        .order("updated_at", { ascending: false })
         .limit(1)
         .maybeSingle();
       if (!error && data) {
