@@ -30,7 +30,11 @@ export default function EditCoupleModal({
   const [anniversary, setAnniversary] = useState(
     initial?.anniversary_date || ""
   );
-  const [uploading, setUploading] = useState<"p1" | "p2" | null>(null);
+  const [background, setBackground] = useState(
+    (initial as (CoupleProfile & { background_url?: string | null }) | null)?.background_url || ""
+  );
+  const [bgPreview, setBgPreview] = useState("");
+  const [uploading, setUploading] = useState<"p1" | "p2" | "bg" | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -62,6 +66,30 @@ export default function EditCoupleModal({
     }
   }
 
+  async function handleUploadBackground(file: File) {
+    const preview = URL.createObjectURL(file);
+    setBgPreview(preview);
+    setUploading("bg");
+    setError(null);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `bg-${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(path, file, { upsert: true });
+      if (uploadError) throw uploadError;
+      const { data } = supabase.storage.from("avatars").getPublicUrl(path);
+      setBackground(data.publicUrl);
+    } catch (err) {
+      setError(t("Upload ảnh thất bại. Thử lại nhé."));
+      console.error(err);
+    } finally {
+      setUploading(null);
+      setBgPreview("");
+      URL.revokeObjectURL(preview);
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
@@ -73,6 +101,7 @@ export default function EditCoupleModal({
       partner1_avatar_url: partner1Avatar || null,
       partner2_avatar_url: partner2Avatar || null,
       anniversary_date: anniversary || null,
+      background_url: background || null,
       updated_at: new Date().toISOString(),
     };
 
@@ -127,6 +156,14 @@ export default function EditCoupleModal({
             avatarUrl={partner2Avatar}
             uploading={uploading === "p2"}
             onFile={(f) => handleUpload(f, "p2")}
+          />
+
+          <BackgroundField
+            url={background}
+            preview={bgPreview}
+            uploading={uploading === "bg"}
+            onFile={handleUploadBackground}
+            onClear={() => setBackground("")}
           />
 
           <label className="flex flex-col gap-1.5 text-sm font-medium text-charcoal/90">
@@ -225,6 +262,74 @@ function AvatarField({
           className="input"
         />
       </div>
+    </div>
+  );
+}
+
+function BackgroundField({
+  url,
+  preview,
+  uploading,
+  onFile,
+  onClear,
+}: {
+  url: string;
+  preview: string;
+  uploading: boolean;
+  onFile: (file: File) => void;
+  onClear: () => void;
+}) {
+  const shown = preview || url;
+  return (
+    <div className="flex flex-col gap-1.5">
+      <span className="text-xs font-medium text-charcoal/70">
+        {t("Ảnh nền khung (không bắt buộc)")}
+      </span>
+      <label
+        htmlFor="couple-background-upload"
+        className="relative h-28 rounded-lg border border-dashed border-charcoal/25 overflow-hidden cursor-pointer flex items-center justify-center text-sm text-charcoal/60 hover:border-ink hover:text-ink transition-colors"
+      >
+        {shown ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={shown}
+            alt=""
+            className={`w-full h-full object-cover ${uploading ? "opacity-50" : ""}`}
+          />
+        ) : (
+          <span className="inline-flex items-center gap-2">
+            <Upload size={15} />
+            {t("Chọn ảnh nền")}
+          </span>
+        )}
+        {uploading && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-6 h-6 border-2 border-paper border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
+        <input
+          id="couple-background-upload"
+          type="file"
+          accept="image/*"
+          className="sr-only"
+          disabled={uploading}
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) onFile(file);
+            e.target.value = "";
+          }}
+        />
+      </label>
+      {url && !uploading && (
+        <button
+          type="button"
+          onClick={onClear}
+          className="self-start inline-flex items-center gap-1.5 text-xs font-medium text-charcoal/70 hover:text-ink"
+        >
+          <X size={13} />
+          {t("Xoá ảnh nền")}
+        </button>
+      )}
     </div>
   );
 }

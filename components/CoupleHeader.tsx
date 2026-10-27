@@ -14,8 +14,10 @@ function daysTogether(anniversary: string): number {
   return Math.floor(diff / (1000 * 60 * 60 * 24));
 }
 
+type ProfileWithBg = CoupleProfile & { background_url?: string | null };
+
 export default function CoupleHeader() {
-  const [profile, setProfile] = useState<CoupleProfile | null>(null);
+  const [profile, setProfile] = useState<ProfileWithBg | null>(null);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -36,12 +38,30 @@ export default function CoupleHeader() {
 
   if (loading) return null;
 
+  const background = profile?.background_url || null;
+
   const days = profile?.anniversary_date
     ? daysTogether(profile.anniversary_date)
     : null;
 
   return (
-    <div className="paper-card rounded-xl border-[3px] border-ink shadow-[5px_5px_0_0_#1A1A1A] px-4 sm:px-8 py-5 sm:py-7 mb-5 sm:mb-8 flex flex-col items-center gap-4 sm:gap-5 w-full relative">
+    <div className="paper-card rounded-xl border-[3px] border-ink shadow-[5px_5px_0_0_#1A1A1A] px-4 sm:px-8 py-5 sm:py-7 mb-5 sm:mb-8 flex flex-col items-center gap-4 sm:gap-5 w-full relative isolate">
+      {background && (
+        <div
+          className="absolute inset-0 -z-10 rounded-[inherit] overflow-hidden pointer-events-none"
+          aria-hidden="true"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={background}
+            alt=""
+            decoding="async"
+            className="w-full h-full object-cover"
+          />
+          {/* lớp phủ để chữ vẫn dễ đọc */}
+          <div className="absolute inset-0 bg-paper/75" />
+        </div>
+      )}
       <button
         onClick={() => setModalOpen(true)}
         aria-label={t("Sửa hồ sơ hai người")}

@@ -199,6 +199,9 @@ export const EN: Record<string, string> = {
   "Tháng 10": "October",
   "Tháng 11": "November",
   "Tháng 12": "December",
+  "Ảnh nền khung (không bắt buộc)": "Card background (optional)",
+  "Chọn ảnh nền": "Choose background",
+  "Xoá ảnh nền": "Remove background",
 };
 
 export function t(key: string, vars?: Record<string, string | number>): string {
