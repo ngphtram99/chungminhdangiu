@@ -1,5 +1,6 @@
 "use client";
 
+import { readCache, writeCache } from "@/lib/cache";
 import { t } from "@/lib/i18n";
 import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
@@ -28,6 +29,11 @@ export default function PlacesPage() {
   const [geocoding, setGeocoding] = useState(false);
 
   useEffect(() => {
+    const cached = readCache<Place[]>("places:visited");
+    if (cached) {
+      setPlaces(cached);
+      setLoading(false);
+    }
     fetchPlaces();
 
     const channel = supabase
@@ -47,7 +53,6 @@ export default function PlacesPage() {
   }, []);
 
   async function fetchPlaces() {
-    setLoading(true);
     const { data, error } = await supabase
       .from("places")
       .select("*")
@@ -66,6 +71,7 @@ export default function PlacesPage() {
         return new Date(dateB).getTime() - new Date(dateA).getTime();
       });
       setPlaces(sorted);
+      writeCache("places:visited", sorted);
       setError(null);
     }
     setLoading(false);

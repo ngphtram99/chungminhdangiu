@@ -1,5 +1,6 @@
 "use client";
 
+import { readCache, writeCache } from "@/lib/cache";
 import { t } from "@/lib/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -35,6 +36,13 @@ export default function RandomPage() {
   const [hasStartedSpin, setHasStartedSpin] = useState(false);
 
   useEffect(() => {
+    const cachedWant = readCache<Place[]>("places:want");
+    if (cachedWant) {
+      setPlaces(cachedWant);
+      setLoading(false);
+    }
+    const cachedVisited = readCache<Place[]>("places:visited-random");
+    if (cachedVisited) setVisitedPlaces(cachedVisited);
     fetchPlaces();
     fetchVisitedPlaces();
     if (typeof window !== "undefined" && navigator.geolocation) {
@@ -68,13 +76,15 @@ export default function RandomPage() {
   }, []);
 
   async function fetchPlaces() {
-    setLoading(true);
     const { data, error } = await supabase
       .from("places")
       .select("*")
       .eq("status", "want_to_go")
       .order("created_at", { ascending: false });
-    if (!error && data) setPlaces(data as Place[]);
+    if (!error && data) {
+      setPlaces(data as Place[]);
+      writeCache("places:want", data);
+    }
     setLoading(false);
   }
 
@@ -84,7 +94,10 @@ export default function RandomPage() {
       .select("*")
       .eq("status", "visited")
       .order("created_at", { ascending: false });
-    if (!error && data) setVisitedPlaces(data as Place[]);
+    if (!error && data) {
+      setVisitedPlaces(data as Place[]);
+      writeCache("places:visited-random", data);
+    }
   }
 
   async function handleSavePlace(values: PlaceFormValues) {

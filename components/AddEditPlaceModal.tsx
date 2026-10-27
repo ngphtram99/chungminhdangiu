@@ -425,7 +425,7 @@ export default function AddEditPlaceModal({
                         aria-label={t("Phóng to ảnh")}
                       >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={link} alt="" className="w-full h-full object-cover" />
+                        <img loading="lazy" decoding="async" src={link} alt="" className="w-full h-full object-cover" />
                       </button>
                       <button
                         type="button"
@@ -443,7 +443,7 @@ export default function AddEditPlaceModal({
                 {pending.map((p) => (
                   <div key={p.id} className="relative w-16 h-16 rounded-lg overflow-hidden">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={p.preview} alt="" className="w-full h-full object-cover opacity-50" />
+                    <img loading="lazy" decoding="async" src={p.preview} alt="" className="w-full h-full object-cover opacity-50" />
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="w-5 h-5 border-2 border-paper border-t-transparent rounded-full animate-spin" />
                     </div>
@@ -508,7 +508,7 @@ export default function AddEditPlaceModal({
               </button>
             </div>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <img loading="lazy" decoding="async"
               src={lightboxPhoto}
               alt={t("Ảnh địa điểm")}
               className="w-full max-h-[75vh] object-contain rounded-xl border-[3px] border-paper"

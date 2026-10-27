@@ -1,8 +1,8 @@
 "use client";
 
+import { readCache, loadProfile } from "@/lib/cache";
 import { t } from "@/lib/i18n";
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
 import { CoupleProfile } from "@/lib/types";
 
 function breakdownDuration(anniversary: string) {
@@ -39,17 +39,17 @@ export default function LoveDuration() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const cached = readCache<CoupleProfile>("profile");
+    if (cached) {
+      setProfile(cached);
+      setLoading(false);
+    }
     fetchProfile();
   }, []);
 
   async function fetchProfile() {
-    setLoading(true);
-    const { data } = await supabase
-      .from("couple_profile")
-      .select("*")
-      .limit(1)
-      .maybeSingle();
-    if (data) setProfile(data as CoupleProfile);
+    const data = await loadProfile();
+    if (data) setProfile(data);
     setLoading(false);
   }
 

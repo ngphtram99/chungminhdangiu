@@ -1,5 +1,6 @@
 "use client";
 
+import { readCache, writeCache } from "@/lib/cache";
 import { t } from "@/lib/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -61,6 +62,17 @@ export default function CalendarPage() {
   const [selectedPhotos, setSelectedPhotos] = useState<number[]>([]);
 
   useEffect(() => {
+    const cachedNotes = readCache<Record<string, CalendarNote>>(`cal:notes:${year}`);
+    if (cachedNotes) {
+      setNotes(cachedNotes);
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
+    const cachedPhotos = readCache<Record<string, { url: string; name: string }[]>>(`cal:photos:${year}`);
+    if (cachedPhotos) setPhotosByDate(cachedPhotos);
+    const cachedRecent = readCache<CalendarNote[]>("cal:recent");
+    if (cachedRecent) setRecentNotes(cachedRecent);
     fetchNotes();
     fetchVisitedPhotos();
     fetchRecentNotes();
@@ -90,7 +102,6 @@ export default function CalendarPage() {
   }, [year]);
 
   async function fetchNotes() {
-    setLoading(true);
     const { data, error } = await supabase
       .from("calendar_notes")
       .select("*")
@@ -102,6 +113,7 @@ export default function CalendarPage() {
         map[n.note_date] = n;
       });
       setNotes(map);
+      writeCache(`cal:notes:${year}`, map);
     }
     setLoading(false);
   }
@@ -112,7 +124,10 @@ export default function CalendarPage() {
       .select("*")
       .order("updated_at", { ascending: false })
       .limit(50);
-    if (!error && data) setRecentNotes(data as CalendarNote[]);
+    if (!error && data) {
+      setRecentNotes(data as CalendarNote[]);
+      writeCache("cal:recent", data);
+    }
   }
 
   async function fetchVisitedPhotos() {
@@ -132,6 +147,7 @@ export default function CalendarPage() {
         map[p.visited_date].push({ url: photo, name: p.name });
       });
       setPhotosByDate(map);
+      writeCache(`cal:photos:${year}`, map);
     }
   }
 
@@ -336,7 +352,7 @@ export default function CalendarPage() {
                   <span className="shrink-0 flex items-center">
                     {n.photo_links.slice(0, 3).map((url, pi) => (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      <img loading="lazy" decoding="async"
                         key={pi}
                         src={url}
                         alt=""
@@ -486,7 +502,7 @@ export default function CalendarPage() {
                     <span className="flex items-center justify-center mt-1 h-5 sm:h-6">
                       {photosByDate[dateKey].slice(0, 4).map((p, i) => (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img
+                        <img loading="lazy" decoding="async"
                           key={i}
                           src={p.url}
                           alt={p.name}
@@ -577,7 +593,7 @@ export default function CalendarPage() {
                           aria-label={t("Phóng to ảnh")}
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={link} alt="" className="w-full h-full object-cover" />
+                          <img loading="lazy" decoding="async" src={link} alt="" className="w-full h-full object-cover" />
                         </button>
                         <button
                           type="button"
@@ -595,7 +611,7 @@ export default function CalendarPage() {
                   {pendingPhotos.map((p) => (
                     <div key={p.id} className="relative w-16 h-16 rounded-lg overflow-hidden">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={p.preview} alt="" className="w-full h-full object-cover opacity-50" />
+                      <img loading="lazy" decoding="async" src={p.preview} alt="" className="w-full h-full object-cover opacity-50" />
                       <div className="absolute inset-0 flex items-center justify-center">
                         <div className="w-5 h-5 border-2 border-paper border-t-transparent rounded-full animate-spin" />
                       </div>
@@ -632,7 +648,7 @@ export default function CalendarPage() {
                         className="w-14 h-14 rounded-lg overflow-hidden border-2 border-ink"
                       >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
+                        <img loading="lazy" decoding="async"
                           src={p.url}
                           alt={p.name}
                           className="w-full h-full object-cover"
@@ -700,7 +716,7 @@ export default function CalendarPage() {
               </button>
             </div>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <img loading="lazy" decoding="async"
               src={lightboxPhoto.url}
               alt={lightboxPhoto.name}
               className="w-full max-h-[75vh] object-contain rounded-xl border-[3px] border-paper"

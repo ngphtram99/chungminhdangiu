@@ -54,7 +54,7 @@ export default function PlaceListItem({
       >
         {thumb ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={thumb} alt={place.name} className="w-full h-full object-cover" />
+          <img loading="lazy" decoding="async" src={thumb} alt={place.name} className="w-full h-full object-cover" />
         ) : (
           <MapPinned size={20} className="text-ink/40" />
         )}

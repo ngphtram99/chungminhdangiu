@@ -150,7 +150,7 @@ export default function PlacesMapView({
                 <div style={{ textAlign: "center", minWidth: 140 }}>
                   {p.photo_links && p.photo_links[0] && (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    <img loading="lazy" decoding="async"
                       src={p.photo_links[0]}
                       alt={p.name}
                       style={{

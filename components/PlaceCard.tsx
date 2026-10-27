@@ -26,7 +26,7 @@ export default function PlaceCard({
       <div className="aspect-[4/3] w-full bg-ink-light/10 relative">
         {heroPhoto ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <img loading="lazy" decoding="async"
             src={heroPhoto}
             alt={t("Ảnh {name}", { name: place.name })}
             className="w-full h-full object-cover"
@@ -91,7 +91,7 @@ export default function PlaceCard({
             {extraPhotos.map((link, i) => (
               <a key={i} href={link} target="_blank" rel="noopener noreferrer" className="w-11 h-11 sm:w-12 sm:h-12 rounded-md overflow-hidden shrink-0 border-2 border-ink transition-all">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <img loading="lazy" decoding="async"
                   src={link}
                   alt={t("Ảnh {name} {n}", { name: place.name, n: i + 2 })}
                   className="w-full h-full object-cover"

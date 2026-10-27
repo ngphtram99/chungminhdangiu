@@ -1,5 +1,6 @@
 "use client";
 
+import { readCache, writeCache, loadProfile } from "@/lib/cache";
 import { t } from "@/lib/i18n";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -29,6 +30,13 @@ export default function PhotoGallery() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    const cachedProfile = readCache<CoupleProfile>("profile");
+    if (cachedProfile) setProfile(cachedProfile);
+    const cachedPhotos = readCache<CouplePhoto[]>("gallery:photos");
+    if (cachedPhotos) {
+      setPhotos(cachedPhotos);
+      setLoading(false);
+    }
     fetchProfile();
     fetchPhotos();
 
@@ -68,21 +76,19 @@ export default function PhotoGallery() {
   }, []);
 
   async function fetchProfile() {
-    const { data } = await supabase
-      .from("couple_profile")
-      .select("*")
-      .limit(1)
-      .maybeSingle();
-    if (data) setProfile(data as CoupleProfile);
+    const data = await loadProfile();
+    if (data) setProfile(data);
   }
 
   async function fetchPhotos() {
-    setLoading(true);
     const { data, error } = await supabase
       .from("couple_photos")
       .select("*")
       .order("created_at", { ascending: false });
-    if (!error && data) setPhotos(data as CouplePhoto[]);
+    if (!error && data) {
+      setPhotos(data as CouplePhoto[]);
+      writeCache("gallery:photos", data);
+    }
     setLoading(false);
   }
 
@@ -217,7 +223,7 @@ export default function PhotoGallery() {
                   <>
                     <div className="h-24 sm:h-40 w-full bg-charcoal/5">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
+                      <img loading="lazy" decoding="async"
                         src={photo.image_url}
                         alt={t("Ảnh mới nhất của {name}", { name: card.name })}
                         className="w-full h-full object-cover"
