@@ -219,6 +219,8 @@ export const EN: Record<string, string> = {
   "Nhắc {name}": "Remind {name}",
   "Lời nhắc hiện thành thông báo trên điện thoại người nhận, nên họ cần bật thông báo ở phần trên.": "Reminders show up as notifications on the recipient's phone, so they need to turn on notifications above.",
   "Giờ tính theo giờ Việt Nam (GMT+7).": "Times are in Vietnam time (GMT+7).",
+  "Sửa lời nhắc": "Edit reminder",
+  "Đang sửa lời nhắc": "Editing reminder",
 };
 
 export function t(key: string, vars?: Record<string, string | number>): string {

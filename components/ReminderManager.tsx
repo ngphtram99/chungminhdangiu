@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { BellRing, Trash2, Plus } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { BellRing, Trash2, Plus, Pencil } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { t } from "@/lib/i18n";
 import { readCache, loadProfile } from "@/lib/cache";
@@ -31,6 +31,8 @@ export default function ReminderManager() {
   const [target, setTarget] = useState<Who>("partner2");
   const [days, setDays] = useState<number[]>([]);
   const [saving, setSaving] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const formRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -63,9 +65,26 @@ export default function ReminderManager() {
     setDays((prev) => (prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]));
   }
 
-  async function addReminder() {
+  function startEdit(r: Reminder) {
+    setEditingId(r.id);
+    setTitle(r.title);
+    setTime(r.remind_time.slice(0, 5));
+    setTarget(r.target);
+    setDays(r.days ?? []);
     setError(null);
-    if (!me) {
+    formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setTitle("");
+    setDays([]);
+    setError(null);
+  }
+
+  async function saveReminder() {
+    setError(null);
+    if (!editingId && !me) {
       setError(t("Hãy chọn “Máy này là của ai?” ở phần Thông báo trước nhé."));
       return;
     }
@@ -74,18 +93,32 @@ export default function ReminderManager() {
       return;
     }
     setSaving(true);
-    const { error } = await supabase.from("reminders").insert({
+    const payload = {
       title: title.trim(),
       remind_time: time,
       days: days.length > 0 ? [...days].sort() : null,
       target,
-      created_by: me,
-    });
+    };
+    let failed = false;
+    if (editingId) {
+      const old = reminders.find((x) => x.id === editingId);
+      const timeChanged = !old || old.remind_time.slice(0, 5) !== time;
+      // Đổi giờ thì cho phép nhắc lại trong hôm nay nếu giờ mới chưa tới
+      const { error } = await supabase
+        .from("reminders")
+        .update(timeChanged ? { ...payload, last_sent_on: null } : payload)
+        .eq("id", editingId);
+      failed = !!error;
+    } else {
+      const { error } = await supabase.from("reminders").insert({ ...payload, created_by: me });
+      failed = !!error;
+    }
     setSaving(false);
-    if (error) {
+    if (failed) {
       setError(t("Không lưu được lời nhắc. Thử lại nhé."));
       return;
     }
+    setEditingId(null);
     setTitle("");
     setDays([]);
     fetchReminders();
@@ -125,9 +158,9 @@ export default function ReminderManager() {
           {reminders.map((r) => (
             <li
               key={r.id}
-              className={`flex items-center gap-3 rounded-lg border-2 border-charcoal/15 px-3 py-2 ${
-                r.enabled ? "" : "opacity-50"
-              }`}
+              className={`flex items-center gap-3 rounded-lg border-2 px-3 py-2 ${
+                editingId === r.id ? "border-ink" : "border-charcoal/15"
+              } ${r.enabled ? "" : "opacity-50"}`}
             >
               <input
                 type="checkbox"
@@ -148,6 +181,14 @@ export default function ReminderManager() {
               </div>
               <button
                 type="button"
+                onClick={() => startEdit(r)}
+                aria-label={t("Sửa lời nhắc")}
+                className="p-1.5 text-charcoal/50 hover:text-ink transition-colors"
+              >
+                <Pencil size={16} />
+              </button>
+              <button
+                type="button"
                 onClick={() => remove(r)}
                 aria-label={t("Xoá lời nhắc")}
                 className="p-1.5 text-charcoal/50 hover:text-ink transition-colors"
@@ -159,7 +200,10 @@ export default function ReminderManager() {
         </ul>
       )}
 
-      <div className="flex flex-col gap-3">
+      <div ref={formRef} className="flex flex-col gap-3">
+        {editingId && (
+          <p className="text-xs font-medium text-coral-dark">{t("Đang sửa lời nhắc")}</p>
+        )}
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -213,13 +257,23 @@ export default function ReminderManager() {
 
         <button
           type="button"
-          onClick={addReminder}
+          onClick={saveReminder}
           disabled={saving}
           className="flex items-center justify-center gap-2 py-3 rounded-lg border-2 font-medium bg-ink text-paper border-ink disabled:opacity-60"
         >
-          <Plus size={16} />
-          {saving ? t("Đang lưu...") : t("Thêm lời nhắc")}
+          {editingId ? <Pencil size={16} /> : <Plus size={16} />}
+          {saving ? t("Đang lưu...") : editingId ? t("Lưu thay đổi") : t("Thêm lời nhắc")}
         </button>
+
+        {editingId && (
+          <button
+            type="button"
+            onClick={cancelEdit}
+            className="flex items-center justify-center py-3 rounded-lg border-2 font-medium border-charcoal/20 text-charcoal/70 hover:border-ink transition-colors"
+          >
+            {t("Huỷ")}
+          </button>
+        )}
 
         <p className="text-xs text-charcoal/50">
           {t("Lời nhắc hiện thành thông báo trên điện thoại người nhận, nên họ cần bật thông báo ở phần trên.")}{" "}
