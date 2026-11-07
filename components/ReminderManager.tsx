@@ -142,7 +142,7 @@ export default function ReminderManager() {
     }`;
 
   const field =
-    "w-full rounded-lg border-2 border-charcoal/20 bg-transparent px-3 py-2 text-sm text-ink focus:outline-none focus:border-ink";
+    "w-full min-w-0 max-w-full rounded-lg border-2 border-charcoal/20 bg-transparent px-3 py-2 text-sm text-ink focus:outline-none focus:border-ink";
 
   return (
     <section className="paper-card rounded-xl border-[3px] border-ink shadow-[4px_4px_0_0_#1A1A1A] p-5 sm:p-7 mt-5 sm:mt-6">
@@ -211,8 +211,8 @@ export default function ReminderManager() {
           className={field}
         />
 
-        <div className="grid grid-cols-2 gap-3">
-          <label className="flex flex-col gap-1 text-xs font-medium text-charcoal/70">
+        <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-3">
+          <label className="flex flex-col gap-1 min-w-0 text-xs font-medium text-charcoal/70">
             {t("Giờ nhắc")}
             <input
               type="time"
@@ -221,7 +221,7 @@ export default function ReminderManager() {
               className={field}
             />
           </label>
-          <label className="flex flex-col gap-1 text-xs font-medium text-charcoal/70">
+          <label className="flex flex-col gap-1 min-w-0 text-xs font-medium text-charcoal/70">
             {t("Nhắc cho ai?")}
             <select
               value={target}
@@ -274,11 +274,6 @@ export default function ReminderManager() {
             {t("Huỷ")}
           </button>
         )}
-
-        <p className="text-xs text-charcoal/50">
-          {t("Lời nhắc hiện thành thông báo trên điện thoại người nhận, nên họ cần bật thông báo ở phần trên.")}{" "}
-          {t("Giờ tính theo giờ Việt Nam (GMT+7).")}
-        </p>
       </div>
     </section>
   );
