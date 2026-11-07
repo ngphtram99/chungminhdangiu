@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Sun, Moon, Languages, Check } from "lucide-react";
 import PushToggle from "@/components/PushToggle";
+import ReminderManager from "@/components/ReminderManager";
 import { useLanguage } from "@/components/LanguageProvider";
 import { t } from "@/lib/i18n";
 
@@ -109,6 +110,7 @@ export default function SettingsPage() {
       </section>
 
       <PushToggle />
+      <ReminderManager />
     </main>
   );
 }

@@ -202,6 +202,23 @@ export const EN: Record<string, string> = {
   "Ảnh nền khung (không bắt buộc)": "Card background (optional)",
   "Chọn ảnh nền": "Choose background",
   "Xoá ảnh nền": "Remove background",
+  "Lời nhắc": "Reminders",
+  "Chưa có lời nhắc nào.": "No reminders yet.",
+  "Vd: Uống thuốc nha": "e.g. Take your medicine",
+  "Giờ nhắc": "Time",
+  "Nhắc cho ai?": "Remind who?",
+  "Lặp lại": "Repeat",
+  "Mỗi ngày": "Every day",
+  "Không chọn ngày nào = nhắc mỗi ngày.": "Leave empty to remind every day.",
+  "Thêm lời nhắc": "Add reminder",
+  "Hãy chọn “Máy này là của ai?” ở phần Thông báo trước nhé.": "Please choose “Whose device is this?” in the Notifications section first.",
+  "Nhập nội dung lời nhắc nhé.": "Please enter what to remind.",
+  "Không lưu được lời nhắc. Thử lại nhé.": "Couldn't save the reminder. Please try again.",
+  "Xoá lời nhắc": "Delete reminder",
+  "Bật/tắt lời nhắc": "Turn reminder on/off",
+  "Nhắc {name}": "Remind {name}",
+  "Lời nhắc hiện thành thông báo trên điện thoại người nhận, nên họ cần bật thông báo ở phần trên.": "Reminders show up as notifications on the recipient's phone, so they need to turn on notifications above.",
+  "Giờ tính theo giờ Việt Nam (GMT+7).": "Times are in Vietnam time (GMT+7).",
 };
 
 export function t(key: string, vars?: Record<string, string | number>): string {
