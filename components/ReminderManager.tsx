@@ -19,6 +19,9 @@ interface Reminder {
   enabled: boolean;
 }
 
+const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
+const MINUTES = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0"));
+
 // 1 = thứ hai ... 7 = chủ nhật
 const DAY_LABELS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 
@@ -211,16 +214,37 @@ export default function ReminderManager() {
           className={field}
         />
 
-        <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-3">
-          <label className="flex flex-col gap-1 min-w-0 text-xs font-medium text-charcoal/70">
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1 text-xs font-medium text-charcoal/70">
             {t("Giờ nhắc")}
-            <input
-              type="time"
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-              className={field}
-            />
-          </label>
+            <div className="flex items-center gap-2">
+              <select
+                value={time.slice(0, 2)}
+                onChange={(e) => setTime(`${e.target.value}:${time.slice(3, 5) || "00"}`)}
+                aria-label={t("Giờ nhắc")}
+                className={field}
+              >
+                {HOURS.map((h) => (
+                  <option key={h} value={h}>
+                    {h}
+                  </option>
+                ))}
+              </select>
+              <span className="text-base text-ink">:</span>
+              <select
+                value={time.slice(3, 5)}
+                onChange={(e) => setTime(`${time.slice(0, 2) || "08"}:${e.target.value}`)}
+                aria-label={t("Giờ nhắc")}
+                className={field}
+              >
+                {MINUTES.map((m) => (
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
           <label className="flex flex-col gap-1 min-w-0 text-xs font-medium text-charcoal/70">
             {t("Nhắc cho ai?")}
             <select
